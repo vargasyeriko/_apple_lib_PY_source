@@ -1,0 +1,6 @@
+docx==0.2.4
+docx2pdf==0.1.8
+nltk==3.9.1
+pandas==2.2.3
+PyPDF2==3.0.1
+pyperclip==1.9.0

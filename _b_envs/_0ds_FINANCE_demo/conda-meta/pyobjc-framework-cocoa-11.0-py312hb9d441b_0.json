@@ -1,0 +1,448 @@
+{
+  "build": "py312hb9d441b_0",
+  "build_number": 0,
+  "channel": "https://conda.anaconda.org/conda-forge/osx-arm64",
+  "constrains": [],
+  "depends": [
+    "__osx >=11.0",
+    "libffi >=3.4,<4.0a0",
+    "pyobjc-core 11.0.*",
+    "python >=3.12,<3.13.0a0",
+    "python >=3.12,<3.13.0a0 *_cpython",
+    "python_abi 3.12.* *_cp312"
+  ],
+  "extracted_package_dir": "/Users/yerik/miniforge3/pkgs/pyobjc-framework-cocoa-11.0-py312hb9d441b_0",
+  "files": [
+    "lib/python3.12/site-packages/AppKit/_AppKit.cpython-312-darwin.so",
+    "lib/python3.12/site-packages/AppKit/__init__.py",
+    "lib/python3.12/site-packages/AppKit/__pycache__/__init__.cpython-312.pyc",
+    "lib/python3.12/site-packages/AppKit/__pycache__/_metadata.cpython-312.pyc",
+    "lib/python3.12/site-packages/AppKit/__pycache__/_nsapp.cpython-312.pyc",
+    "lib/python3.12/site-packages/AppKit/_inlines.cpython-312-darwin.so",
+    "lib/python3.12/site-packages/AppKit/_metadata.py",
+    "lib/python3.12/site-packages/AppKit/_nsapp.py",
+    "lib/python3.12/site-packages/Cocoa/__init__.py",
+    "lib/python3.12/site-packages/Cocoa/__pycache__/__init__.cpython-312.pyc",
+    "lib/python3.12/site-packages/CoreFoundation/_CoreFoundation.cpython-312-darwin.so",
+    "lib/python3.12/site-packages/CoreFoundation/__init__.py",
+    "lib/python3.12/site-packages/CoreFoundation/__pycache__/__init__.cpython-312.pyc",
+    "lib/python3.12/site-packages/CoreFoundation/__pycache__/_metadata.cpython-312.pyc",
+    "lib/python3.12/site-packages/CoreFoundation/__pycache__/_static.cpython-312.pyc",
+    "lib/python3.12/site-packages/CoreFoundation/_inlines.cpython-312-darwin.so",
+    "lib/python3.12/site-packages/CoreFoundation/_metadata.py",
+    "lib/python3.12/site-packages/CoreFoundation/_static.py",
+    "lib/python3.12/site-packages/Foundation/_Foundation.cpython-312-darwin.so",
+    "lib/python3.12/site-packages/Foundation/__init__.py",
+    "lib/python3.12/site-packages/Foundation/__pycache__/__init__.cpython-312.pyc",
+    "lib/python3.12/site-packages/Foundation/__pycache__/_context.cpython-312.pyc",
+    "lib/python3.12/site-packages/Foundation/__pycache__/_functiondefines.cpython-312.pyc",
+    "lib/python3.12/site-packages/Foundation/__pycache__/_metadata.cpython-312.pyc",
+    "lib/python3.12/site-packages/Foundation/__pycache__/_nsindexset.cpython-312.pyc",
+    "lib/python3.12/site-packages/Foundation/__pycache__/_nsobject.cpython-312.pyc",
+    "lib/python3.12/site-packages/Foundation/__pycache__/_nsurl.cpython-312.pyc",
+    "lib/python3.12/site-packages/Foundation/_context.py",
+    "lib/python3.12/site-packages/Foundation/_functiondefines.py",
+    "lib/python3.12/site-packages/Foundation/_inlines.cpython-312-darwin.so",
+    "lib/python3.12/site-packages/Foundation/_metadata.py",
+    "lib/python3.12/site-packages/Foundation/_nsindexset.py",
+    "lib/python3.12/site-packages/Foundation/_nsobject.py",
+    "lib/python3.12/site-packages/Foundation/_nsurl.py",
+    "lib/python3.12/site-packages/PyObjCTools/AppCategories.py",
+    "lib/python3.12/site-packages/PyObjCTools/AppHelper.py",
+    "lib/python3.12/site-packages/PyObjCTools/Conversion.py",
+    "lib/python3.12/site-packages/PyObjCTools/FndCategories.py",
+    "lib/python3.12/site-packages/PyObjCTools/__pycache__/AppCategories.cpython-312.pyc",
+    "lib/python3.12/site-packages/PyObjCTools/__pycache__/AppHelper.cpython-312.pyc",
+    "lib/python3.12/site-packages/PyObjCTools/__pycache__/Conversion.cpython-312.pyc",
+    "lib/python3.12/site-packages/PyObjCTools/__pycache__/FndCategories.cpython-312.pyc",
+    "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/INSTALLER",
+    "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/LICENSE.txt",
+    "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/METADATA",
+    "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/RECORD",
+    "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/REQUESTED",
+    "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/WHEEL",
+    "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/direct_url.json",
+    "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/pyobjc-build-info.txt",
+    "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/top_level.txt"
+  ],
+  "fn": "pyobjc-framework-cocoa-11.0-py312hb9d441b_0.conda",
+  "license": "MIT",
+  "link": {
+    "source": "/Users/yerik/miniforge3/pkgs/pyobjc-framework-cocoa-11.0-py312hb9d441b_0",
+    "type": 1
+  },
+  "md5": "dc263e6e18b32318a43252dbb0596ad4",
+  "name": "pyobjc-framework-cocoa",
+  "package_tarball_full_path": "/Users/yerik/miniforge3/pkgs/pyobjc-framework-cocoa-11.0-py312hb9d441b_0.conda",
+  "paths_data": {
+    "paths": [
+      {
+        "_path": "lib/python3.12/site-packages/AppKit/_AppKit.cpython-312-darwin.so",
+        "file_mode": "binary",
+        "path_type": "hardlink",
+        "prefix_placeholder": "/Users/runner/miniforge3/conda-bld/pyobjc-framework-cocoa_1736926938901/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placeh",
+        "sha256": "9f3df189ec4b7b3a3211e372492a8377bb014719ee4fb70f1e86cf1e2a9be4af",
+        "sha256_in_prefix": "84819d0c0b80873b0dba57af96d196dc7c4d8b9d81504dfd93309e2a47902dd6",
+        "size_in_bytes": 245952
+      },
+      {
+        "_path": "lib/python3.12/site-packages/AppKit/__init__.py",
+        "path_type": "hardlink",
+        "sha256": "6532d4a11553c8a629d5cace2cc11b32eeba48e421068c13ef08160e1e2930da",
+        "sha256_in_prefix": "6532d4a11553c8a629d5cace2cc11b32eeba48e421068c13ef08160e1e2930da",
+        "size_in_bytes": 7879
+      },
+      {
+        "_path": "lib/python3.12/site-packages/AppKit/__pycache__/__init__.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "ddef8fda6c9f308a318fd9d83d64a718a2cffe52030d15f9de5907f3b66f4a5e",
+        "sha256_in_prefix": "ddef8fda6c9f308a318fd9d83d64a718a2cffe52030d15f9de5907f3b66f4a5e",
+        "size_in_bytes": 6366
+      },
+      {
+        "_path": "lib/python3.12/site-packages/AppKit/__pycache__/_metadata.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "34f2401f63e39101c92fad259a560a5d8e8e783586666c029918715eb8067f50",
+        "sha256_in_prefix": "34f2401f63e39101c92fad259a560a5d8e8e783586666c029918715eb8067f50",
+        "size_in_bytes": 651221
+      },
+      {
+        "_path": "lib/python3.12/site-packages/AppKit/__pycache__/_nsapp.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "a42e82b351e11169e7e0f792c1da006562aad4e14212ff9964cd4dd27345b6cd",
+        "sha256_in_prefix": "a42e82b351e11169e7e0f792c1da006562aad4e14212ff9964cd4dd27345b6cd",
+        "size_in_bytes": 1657
+      },
+      {
+        "_path": "lib/python3.12/site-packages/AppKit/_inlines.cpython-312-darwin.so",
+        "path_type": "hardlink",
+        "sha256": "2ac7b8c8c382382260864ba9030b478ae66e99512bc69ec020a910b713999b5c",
+        "sha256_in_prefix": "2ac7b8c8c382382260864ba9030b478ae66e99512bc69ec020a910b713999b5c",
+        "size_in_bytes": 51520
+      },
+      {
+        "_path": "lib/python3.12/site-packages/AppKit/_metadata.py",
+        "path_type": "hardlink",
+        "sha256": "dfc0301a626f311c56bf1a18b01fa1924dc3a3bca0ea71532321648972aca0e0",
+        "sha256_in_prefix": "dfc0301a626f311c56bf1a18b01fa1924dc3a3bca0ea71532321648972aca0e0",
+        "size_in_bytes": 828908
+      },
+      {
+        "_path": "lib/python3.12/site-packages/AppKit/_nsapp.py",
+        "path_type": "hardlink",
+        "sha256": "d61a395830f19efd05f09029c65b2318d02250d5c041b0892a07626e73ee3dd9",
+        "sha256_in_prefix": "d61a395830f19efd05f09029c65b2318d02250d5c041b0892a07626e73ee3dd9",
+        "size_in_bytes": 663
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Cocoa/__init__.py",
+        "path_type": "hardlink",
+        "sha256": "e790e1f18f8928821a767489a40fbebfca7e92bce14e72f7c0c5e974b0fe4953",
+        "sha256_in_prefix": "e790e1f18f8928821a767489a40fbebfca7e92bce14e72f7c0c5e974b0fe4953",
+        "size_in_bytes": 614
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Cocoa/__pycache__/__init__.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "4d6fb5a8da8354c6c3caf33a478e818335d9ea8aac1b555eada094b86e122108",
+        "sha256_in_prefix": "4d6fb5a8da8354c6c3caf33a478e818335d9ea8aac1b555eada094b86e122108",
+        "size_in_bytes": 967
+      },
+      {
+        "_path": "lib/python3.12/site-packages/CoreFoundation/_CoreFoundation.cpython-312-darwin.so",
+        "path_type": "hardlink",
+        "sha256": "748822eea5e18106e653f323e17b6c45183b4bc12208748e878ddddb61940c13",
+        "sha256_in_prefix": "748822eea5e18106e653f323e17b6c45183b4bc12208748e878ddddb61940c13",
+        "size_in_bytes": 96624
+      },
+      {
+        "_path": "lib/python3.12/site-packages/CoreFoundation/__init__.py",
+        "path_type": "hardlink",
+        "sha256": "e0c1f5dddeef99a56bc7b529de8ec8dbd9c26e0fed91c2e21d5523bcf1e4fced",
+        "sha256_in_prefix": "e0c1f5dddeef99a56bc7b529de8ec8dbd9c26e0fed91c2e21d5523bcf1e4fced",
+        "size_in_bytes": 966
+      },
+      {
+        "_path": "lib/python3.12/site-packages/CoreFoundation/__pycache__/__init__.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "e231edfe76cdecccbf12f956b968145e1eaa53c053ed8f3c51e8f72887f6e8f6",
+        "sha256_in_prefix": "e231edfe76cdecccbf12f956b968145e1eaa53c053ed8f3c51e8f72887f6e8f6",
+        "size_in_bytes": 1412
+      },
+      {
+        "_path": "lib/python3.12/site-packages/CoreFoundation/__pycache__/_metadata.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "7b109652e05106cbddbfaa9ee0801610ffc8f0343357bface990042840791035",
+        "sha256_in_prefix": "7b109652e05106cbddbfaa9ee0801610ffc8f0343357bface990042840791035",
+        "size_in_bytes": 134633
+      },
+      {
+        "_path": "lib/python3.12/site-packages/CoreFoundation/__pycache__/_static.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "c98b6d2b7789e991db52df54a21f908d844da51e492755cdf4fe2efb94450e24",
+        "sha256_in_prefix": "c98b6d2b7789e991db52df54a21f908d844da51e492755cdf4fe2efb94450e24",
+        "size_in_bytes": 4524
+      },
+      {
+        "_path": "lib/python3.12/site-packages/CoreFoundation/_inlines.cpython-312-darwin.so",
+        "path_type": "hardlink",
+        "sha256": "aa1bfd2e0f5717128f92e6a07546284ea9b932e70cf22d31d88807f830e73ac5",
+        "sha256_in_prefix": "aa1bfd2e0f5717128f92e6a07546284ea9b932e70cf22d31d88807f830e73ac5",
+        "size_in_bytes": 54096
+      },
+      {
+        "_path": "lib/python3.12/site-packages/CoreFoundation/_metadata.py",
+        "path_type": "hardlink",
+        "sha256": "ced1a4ca11d42ba963c21f423f7da0f31d617bc03930ff77c41b0c68dcf1f060",
+        "sha256_in_prefix": "ced1a4ca11d42ba963c21f423f7da0f31d617bc03930ff77c41b0c68dcf1f060",
+        "size_in_bytes": 153074
+      },
+      {
+        "_path": "lib/python3.12/site-packages/CoreFoundation/_static.py",
+        "path_type": "hardlink",
+        "sha256": "5413c005ad61cf9329322152e8d4d6996a7a8ef8c1499077a5565bca517e3f80",
+        "sha256_in_prefix": "5413c005ad61cf9329322152e8d4d6996a7a8ef8c1499077a5565bca517e3f80",
+        "size_in_bytes": 2880
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Foundation/_Foundation.cpython-312-darwin.so",
+        "path_type": "hardlink",
+        "sha256": "3dbd1d7baa7477a97a18e375f5209038718a256c3ecf553dc0f069205510b368",
+        "sha256_in_prefix": "3dbd1d7baa7477a97a18e375f5209038718a256c3ecf553dc0f069205510b368",
+        "size_in_bytes": 89680
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Foundation/__init__.py",
+        "path_type": "hardlink",
+        "sha256": "24388bb143601f2f33734e083f7b6269bfbd3afb5d28812fb4422e2f0827b6e6",
+        "sha256_in_prefix": "24388bb143601f2f33734e083f7b6269bfbd3afb5d28812fb4422e2f0827b6e6",
+        "size_in_bytes": 6833
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Foundation/__pycache__/__init__.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "a623d64a80743430ccf47ec58bb50715358fca661ccf847497b8229ae358ae56",
+        "sha256_in_prefix": "a623d64a80743430ccf47ec58bb50715358fca661ccf847497b8229ae358ae56",
+        "size_in_bytes": 9333
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Foundation/__pycache__/_context.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "5978b2a8f18cf0192c5b615674cde93544a56de268ca9cd74b9ad7dc3f61adff",
+        "sha256_in_prefix": "5978b2a8f18cf0192c5b615674cde93544a56de268ca9cd74b9ad7dc3f61adff",
+        "size_in_bytes": 2095
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Foundation/__pycache__/_functiondefines.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "028b8173aa2cea104622ee7bc01d54e7bd6de64a30e98c9ae9fefc9fb7becadb",
+        "sha256_in_prefix": "028b8173aa2cea104622ee7bc01d54e7bd6de64a30e98c9ae9fefc9fb7becadb",
+        "size_in_bytes": 2492
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Foundation/__pycache__/_metadata.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "4139b8156e904ec22244f09f95d843ffaf146ebc7863dfba5f0475994b2cad3c",
+        "sha256_in_prefix": "4139b8156e904ec22244f09f95d843ffaf146ebc7863dfba5f0475994b2cad3c",
+        "size_in_bytes": 359649
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Foundation/__pycache__/_nsindexset.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "90d164eb4ea74e92762cdaef718346946c84b07e3601495127586558b4a4cd80",
+        "sha256_in_prefix": "90d164eb4ea74e92762cdaef718346946c84b07e3601495127586558b4a4cd80",
+        "size_in_bytes": 940
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Foundation/__pycache__/_nsobject.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "eb20e847f9c00d81519e2788cf92915407c5a3fef459ebb794a948a432ff6a14",
+        "sha256_in_prefix": "eb20e847f9c00d81519e2788cf92915407c5a3fef459ebb794a948a432ff6a14",
+        "size_in_bytes": 10121
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Foundation/__pycache__/_nsurl.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "affb545a1030e40fb221f52c3d446a328c6204c3ca7ab2ab9933ca28d95f9dde",
+        "sha256_in_prefix": "affb545a1030e40fb221f52c3d446a328c6204c3ca7ab2ab9933ca28d95f9dde",
+        "size_in_bytes": 920
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Foundation/_context.py",
+        "path_type": "hardlink",
+        "sha256": "17e3938aa07509bd967f9c5668549c80d39ff144910caaff54acc9a5c25d88da",
+        "sha256_in_prefix": "17e3938aa07509bd967f9c5668549c80d39ff144910caaff54acc9a5c25d88da",
+        "size_in_bytes": 713
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Foundation/_functiondefines.py",
+        "path_type": "hardlink",
+        "sha256": "9fd94b2a334e759d866fb78a62bd15ed3aa7ccfba7c84eb8639da7eeacc320c1",
+        "sha256_in_prefix": "9fd94b2a334e759d866fb78a62bd15ed3aa7ccfba7c84eb8639da7eeacc320c1",
+        "size_in_bytes": 1506
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Foundation/_inlines.cpython-312-darwin.so",
+        "path_type": "hardlink",
+        "sha256": "1fef605b6bcd0756a745d3899cd10d3f49dd35ec758c8e0020b01cf7acdc36c4",
+        "sha256_in_prefix": "1fef605b6bcd0756a745d3899cd10d3f49dd35ec758c8e0020b01cf7acdc36c4",
+        "size_in_bytes": 54976
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Foundation/_metadata.py",
+        "path_type": "hardlink",
+        "sha256": "8c96cec5dfebb6bf72a3e187078fc8b0fc10401eb22f7d8136aa06555e33e81e",
+        "sha256_in_prefix": "8c96cec5dfebb6bf72a3e187078fc8b0fc10401eb22f7d8136aa06555e33e81e",
+        "size_in_bytes": 470601
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Foundation/_nsindexset.py",
+        "path_type": "hardlink",
+        "sha256": "dbe1165eeae7d813187f2c0c24b0d6c31407142db544a83deb01c1d35cbf90d8",
+        "sha256_in_prefix": "dbe1165eeae7d813187f2c0c24b0d6c31407142db544a83deb01c1d35cbf90d8",
+        "size_in_bytes": 394
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Foundation/_nsobject.py",
+        "path_type": "hardlink",
+        "sha256": "cf474b680c42a05e92e378e688522918a21029b4d32d5ca4ff6df91cad5165cc",
+        "sha256_in_prefix": "cf474b680c42a05e92e378e688522918a21029b4d32d5ca4ff6df91cad5165cc",
+        "size_in_bytes": 8403
+      },
+      {
+        "_path": "lib/python3.12/site-packages/Foundation/_nsurl.py",
+        "path_type": "hardlink",
+        "sha256": "b02023e99533c18adbaa1278db9e2ba1aeb65e0a508ebcf63fa8ff2558b124e6",
+        "sha256_in_prefix": "b02023e99533c18adbaa1278db9e2ba1aeb65e0a508ebcf63fa8ff2558b124e6",
+        "size_in_bytes": 603
+      },
+      {
+        "_path": "lib/python3.12/site-packages/PyObjCTools/AppCategories.py",
+        "path_type": "hardlink",
+        "sha256": "2686d848d3e27105c2572aa6a150107af58680e9aa62b53921b2789bae4328ce",
+        "sha256_in_prefix": "2686d848d3e27105c2572aa6a150107af58680e9aa62b53921b2789bae4328ce",
+        "size_in_bytes": 841
+      },
+      {
+        "_path": "lib/python3.12/site-packages/PyObjCTools/AppHelper.py",
+        "path_type": "hardlink",
+        "sha256": "c53e3f7b07c6b2ab883f6113c8cda6b7f477ec375b4e08d84819c086167c833a",
+        "sha256_in_prefix": "c53e3f7b07c6b2ab883f6113c8cda6b7f477ec375b4e08d84819c086167c833a",
+        "size_in_bytes": 9605
+      },
+      {
+        "_path": "lib/python3.12/site-packages/PyObjCTools/Conversion.py",
+        "path_type": "hardlink",
+        "sha256": "0862088211b5a04e29b6c4e1d858af9fc3a65677bc9f761a62c79253e3123f37",
+        "sha256_in_prefix": "0862088211b5a04e29b6c4e1d858af9fc3a65677bc9f761a62c79253e3123f37",
+        "size_in_bytes": 7913
+      },
+      {
+        "_path": "lib/python3.12/site-packages/PyObjCTools/FndCategories.py",
+        "path_type": "hardlink",
+        "sha256": "b0c1647cdc8fea3c48f118dced99d918780300de7eac63cd4606745139566204",
+        "sha256_in_prefix": "b0c1647cdc8fea3c48f118dced99d918780300de7eac63cd4606745139566204",
+        "size_in_bytes": 1027
+      },
+      {
+        "_path": "lib/python3.12/site-packages/PyObjCTools/__pycache__/AppCategories.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "d7c13f45c9f4648c23684423c445a7a975a19b324bc1b675ae001be635a0974f",
+        "sha256_in_prefix": "d7c13f45c9f4648c23684423c445a7a975a19b324bc1b675ae001be635a0974f",
+        "size_in_bytes": 1881
+      },
+      {
+        "_path": "lib/python3.12/site-packages/PyObjCTools/__pycache__/AppHelper.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "277b6d363ee96fc706b275db030614f9193e0ca37294e7e8f74d0a4ceed6865d",
+        "sha256_in_prefix": "277b6d363ee96fc706b275db030614f9193e0ca37294e7e8f74d0a4ceed6865d",
+        "size_in_bytes": 13566
+      },
+      {
+        "_path": "lib/python3.12/site-packages/PyObjCTools/__pycache__/Conversion.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "a6a06dd06c5fa5212f551992e6d3379d339e190817eb9f058ef0e0fa29258660",
+        "sha256_in_prefix": "a6a06dd06c5fa5212f551992e6d3379d339e190817eb9f058ef0e0fa29258660",
+        "size_in_bytes": 8914
+      },
+      {
+        "_path": "lib/python3.12/site-packages/PyObjCTools/__pycache__/FndCategories.cpython-312.pyc",
+        "path_type": "hardlink",
+        "sha256": "75a7a396baff7812891164492004a626c3ac1e6d1c03a3752f2e293f258e25da",
+        "sha256_in_prefix": "75a7a396baff7812891164492004a626c3ac1e6d1c03a3752f2e293f258e25da",
+        "size_in_bytes": 1996
+      },
+      {
+        "_path": "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/INSTALLER",
+        "path_type": "hardlink",
+        "sha256": "d0edee15f91b406f3f99726e44eb990be6e34fd0345b52b910c568e0eef6a2a8",
+        "sha256_in_prefix": "d0edee15f91b406f3f99726e44eb990be6e34fd0345b52b910c568e0eef6a2a8",
+        "size_in_bytes": 5
+      },
+      {
+        "_path": "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/LICENSE.txt",
+        "path_type": "hardlink",
+        "sha256": "54160e089a791f388cf746b5e13c65ebc82ddf2dab209a5ca190285647d7e07a",
+        "sha256_in_prefix": "54160e089a791f388cf746b5e13c65ebc82ddf2dab209a5ca190285647d7e07a",
+        "size_in_bytes": 1249
+      },
+      {
+        "_path": "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/METADATA",
+        "path_type": "hardlink",
+        "sha256": "81392ef100e652b6d2b8db6cd389b69698ad53ab69845564721cb6ac925678bf",
+        "sha256_in_prefix": "81392ef100e652b6d2b8db6cd389b69698ad53ab69845564721cb6ac925678bf",
+        "size_in_bytes": 2513
+      },
+      {
+        "_path": "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/RECORD",
+        "path_type": "hardlink",
+        "sha256": "c43faddb24b0e026c937ddf3fdea7b842cc3d191ef3e5840574f8de3e019ef42",
+        "sha256_in_prefix": "c43faddb24b0e026c937ddf3fdea7b842cc3d191ef3e5840574f8de3e019ef42",
+        "size_in_bytes": 3906
+      },
+      {
+        "_path": "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/REQUESTED",
+        "path_type": "hardlink",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "sha256_in_prefix": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_in_bytes": 0
+      },
+      {
+        "_path": "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/WHEEL",
+        "path_type": "hardlink",
+        "sha256": "56e8ccdf2a530b2516ea17130dd2b67a3d00455331954d438e587fcd69c382a9",
+        "sha256_in_prefix": "56e8ccdf2a530b2516ea17130dd2b67a3d00455331954d438e587fcd69c382a9",
+        "size_in_bytes": 109
+      },
+      {
+        "_path": "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/direct_url.json",
+        "path_type": "hardlink",
+        "sha256": "751f38aa7e1e563948de0e0ebabedf679ca36157ad218b20f3f2ce61f083d72f",
+        "sha256_in_prefix": "751f38aa7e1e563948de0e0ebabedf679ca36157ad218b20f3f2ce61f083d72f",
+        "size_in_bytes": 110
+      },
+      {
+        "_path": "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/pyobjc-build-info.txt",
+        "path_type": "hardlink",
+        "sha256": "091b464b3a0186d4f98b175cc998c48e2221c10da0946259199475f9c3f775a4",
+        "sha256_in_prefix": "091b464b3a0186d4f98b175cc998c48e2221c10da0946259199475f9c3f775a4",
+        "size_in_bytes": 59
+      },
+      {
+        "_path": "lib/python3.12/site-packages/pyobjc_framework_Cocoa-11.0.dist-info/top_level.txt",
+        "path_type": "hardlink",
+        "sha256": "d50b275cab2a7d3f48668efb109cf99b17275ca2ffe6ebabb4c985c72ff3bbc9",
+        "sha256_in_prefix": "d50b275cab2a7d3f48668efb109cf99b17275ca2ffe6ebabb4c985c72ff3bbc9",
+        "size_in_bytes": 62
+      }
+    ],
+    "paths_version": 1
+  },
+  "requested_spec": "None",
+  "sha256": "53d099865f8f758029708f4365ee7c9184d9ffcc8fc8210971b723a3936f9c00",
+  "size": 383608,
+  "subdir": "osx-arm64",
+  "timestamp": 1736927118000,
+  "url": "https://conda.anaconda.org/conda-forge/osx-arm64/pyobjc-framework-cocoa-11.0-py312hb9d441b_0.conda",
+  "version": "11.0"
+}

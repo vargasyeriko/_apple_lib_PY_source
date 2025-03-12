@@ -1,0 +1,14 @@
+{
+ "argv": [
+  "/Users/yerik/_apple_lib/_b_envs/_0ds_FINANCE_demo/bin/python",
+  "-m",
+  "ipykernel_launcher",
+  "-f",
+  "{connection_file}"
+ ],
+ "display_name": "Python 3 (ipykernel)",
+ "language": "python",
+ "metadata": {
+  "debugger": true
+ }
+}

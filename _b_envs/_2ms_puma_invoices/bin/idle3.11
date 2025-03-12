@@ -1,0 +1,5 @@
+#!/Users/yerik/_apple_lib/_b_envs/_2ms_puma_invoices/bin/python3.11
+
+from idlelib.pyshell import main
+if __name__ == '__main__':
+    main()

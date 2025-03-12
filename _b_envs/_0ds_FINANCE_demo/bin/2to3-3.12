@@ -1,0 +1,5 @@
+#!/Users/yerik/_apple_lib/_b_envs/_0ds_FINANCE_demo/bin/python3.12
+import sys
+from lib2to3.main import main
+
+sys.exit(main("lib2to3.fixes"))
