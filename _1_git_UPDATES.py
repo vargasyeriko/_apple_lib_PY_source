@@ -8,7 +8,6 @@ from pathlib import Path
 def compare_folders(src, dst):
     """
     Compare source and destination folders, returning new, modified, and deleted files.
-    Faster implementation using os.scandir().
     """
     new_files, modified_files, deleted_files = [], [], []
 
@@ -17,7 +16,7 @@ def compare_folders(src, dst):
     src_files = {}
     dst_files = {}
 
-    # Use os.scandir() for faster file iteration
+    # Use os.scandir() for faster scanning
     def scan_folder(base_path, file_dict):
         for root, _, files in os.walk(base_path):
             for file in files:
@@ -25,47 +24,42 @@ def compare_folders(src, dst):
                 if any(file.endswith(ext) for ext in ignored_extensions):
                     continue
                 try:
-                    file_dict[str(file_path)] = os.stat(file_path).st_mtime
+                    rel_path = file_path.relative_to(base_path)
+                    file_dict[str(rel_path)] = os.stat(file_path).st_mtime
                 except FileNotFoundError:
                     continue
 
     scan_folder(src, src_files)
     scan_folder(dst, dst_files)
 
-    for file_path, src_time in src_files.items():
-        rel_path = str(Path(file_path).relative_to(src))
-        dst_path = str(Path(dst) / rel_path)
-
-        if dst_path not in dst_files:
+    # Find new and modified files
+    for rel_path, src_time in src_files.items():
+        if rel_path not in dst_files:
             new_files.append(rel_path)
-        elif src_time > dst_files[dst_path]:  # Compare timestamps
+        elif src_time > dst_files[rel_path]:  # If modified
             modified_files.append(rel_path)
 
-    for file_path in dst_files:
-        rel_path = str(Path(file_path).relative_to(dst))
-        src_path = str(Path(src) / rel_path)
-
-        if src_path not in src_files:
-            deleted_files.append(rel_path)
+    # Find deleted files
+    deleted_files = [rel_path for rel_path in dst_files if rel_path not in src_files]
 
     return new_files, modified_files, deleted_files
 
 
 def _backup_folder_sync_1703(source_folder, destination):
     """
-    Optimized sync function for backing up a single folder (_a_progs).
+    Optimized sync function for backing up _a_progs while correctly handling deletions.
     """
     if not os.path.exists(source_folder):
         print("❌ Error: Source folder does not exist.")
         return
 
-    dest_folder = os.path.join(destination, os.path.basename(source_folder))
+    dest_folder = Path(destination) / Path(source_folder).name
 
     print("\n🔍 Checking for updates...\n")
 
     # Compare and find changes
-    if not os.path.exists(dest_folder):
-        print(f"📂 {os.path.basename(source_folder)} → Destination does not exist (full copy).")
+    if not dest_folder.exists():
+        print(f"📂 {dest_folder} → Destination does not exist (full copy needed).")
         sync_type = "FULL_COPY"
     else:
         new_files, modified_files, deleted_files = compare_folders(source_folder, dest_folder)
@@ -75,17 +69,10 @@ def _backup_folder_sync_1703(source_folder, destination):
             print("✅ No changes detected. Everything is up to date.")
             return
 
-        print(f"🔄 {os.path.basename(source_folder)} has {total_changes} changes:")
+        print(f"🔄 {Path(source_folder).name} has {total_changes} changes:")
         print(f" ➕ {len(new_files)} new files")
         print(f" ✏ {len(modified_files)} modified files")
         print(f" ❌ {len(deleted_files)} deleted files")
-
-        # Auto-remove deleted files
-        for rel_path in deleted_files:
-            delete_path = os.path.join(dest_folder, rel_path)
-            if os.path.exists(delete_path):
-                os.remove(delete_path)
-        print("🗑 Deleted files removed.")
 
         sync_type = "PARTIAL_COPY"
 
@@ -93,29 +80,31 @@ def _backup_folder_sync_1703(source_folder, destination):
     start_time = time.time()
 
     if sync_type == "FULL_COPY":
-        if os.path.exists(dest_folder):
+        if dest_folder.exists():
             print(f"🗑 Removing existing folder: {dest_folder}")
             shutil.rmtree(dest_folder)
         shutil.copytree(source_folder, dest_folder)
     else:
-        # Copy new & modified files
-        for root, _, files in os.walk(source_folder):
-            rel_path = Path(root).relative_to(source_folder)
-            dest_path = Path(dest_folder) / rel_path
-            dest_path.mkdir(parents=True, exist_ok=True)
+        # ✅ Delete removed files
+        for rel_path in deleted_files:
+            delete_path = dest_folder / rel_path
+            if delete_path.exists():
+                delete_path.unlink()
+                print(f"🗑 Deleted: {delete_path}")
 
-            for file in files:
-                src_file = Path(root) / file
-                dest_file = dest_path / file
+        # ✅ Copy new & modified files
+        for rel_path in new_files + modified_files:
+            src_file = Path(source_folder) / rel_path
+            dest_file = dest_folder / rel_path
 
-                if not src_file.exists():  # Skip if source file is missing
-                    continue
+            # Ensure destination folder exists
+            dest_file.parent.mkdir(parents=True, exist_ok=True)
 
-                if not dest_file.exists() or os.stat(src_file).st_mtime > os.stat(dest_file).st_mtime:
-                    shutil.copy2(src_file, dest_file)  # Preserve metadata
+            shutil.copy2(src_file, dest_file)
+            print(f"✔ Copied: {src_file} → {dest_file}")
 
     elapsed_time = time.time() - start_time
-    print(f"\n🚀 TQM: {os.path.basename(source_folder)} synced in {elapsed_time:.2f} seconds.")
+    print(f"\n🚀 TQM: {Path(source_folder).name} synced in {elapsed_time:.2f} seconds.")
 
 
 # !#!#!#!#! RUNNING STATEMENTS #!#!#!#!#!
@@ -124,6 +113,7 @@ _backup_folder_sync_1703(
     "/Users/yerik/_apple_lib/_a_progs",
     "/Users/yerik/_apple_lib/_g_GIT"
 )
+
 
 
 ############################### new_add GIT
