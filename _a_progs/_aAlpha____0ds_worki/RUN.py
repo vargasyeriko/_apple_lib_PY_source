@@ -1,6 +1,7 @@
 #%%writefile RUN.py 
 exec(open(f"/Users/yerik/_apple_source/PY/GLOBAL/_1_paths.py", encoding="utf-8").read())  # GLOBAL
 
+
 import subprocess
 import webbrowser
 #...............................................................................VARIABLES ::: dates
