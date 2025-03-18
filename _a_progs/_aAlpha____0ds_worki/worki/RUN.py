@@ -1,21 +1,6 @@
 #%%writefile RUN.py 
 exec(open(f"/Users/yerik/_apple_source/PY/GLOBAL/_1_paths.py", encoding="utf-8").read())  # GLOBAL
 
-import nltk
-nltk.download('punkt')
-
-from nltk.tokenize import word_tokenize
-
-def preprocess_text(text):
-    """Tokenize, remove stopwords, and lemmatize a given text."""
-    tokens = word_tokenize(text.lower())  # Use word_tokenize from punkt
-    return tokens  # This should now work without trying to load 'punkt_tab'
-import nltk
-nltk.data.path.append("/Users/yerik/_apple_lib/_b_envs/Alpha____0ds_worki/nltk_data")
-nltk.download('punkt')
-
-
-
 import subprocess
 import webbrowser
 #...............................................................................VARIABLES ::: dates
