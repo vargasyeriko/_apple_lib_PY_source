@@ -19,7 +19,7 @@ from _invoice_fn_ import create_invoice  # Import the function directly
 
 # -----######-----###### FUNCTION START -----######-----######
 
-def _invoice_0305_dj_dinner_SET_GET_invoice():
+def _invoice_PUMA_dj_dinner_SET_GET_invoice():
     """
     This function prompts the user for an invoice number and service date (mm/dd/yyyy),
     checks if an invoice file with the same number already exists (pattern: ac-25-##.pdf),
@@ -74,4 +74,4 @@ def _invoice_0305_dj_dinner_SET_GET_invoice():
 # -----######-----###### FUNCTION END -----######-----######
 
 # !#!#!#!#! RUNNING STATEMENTS !#!#!#!#! 
-_invoice_0305_dj_dinner_SET_GET_invoice()
+_invoice_PUMA_dj_dinner_SET_GET_invoice()
