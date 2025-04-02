@@ -2,16 +2,16 @@
 
 exec(open("AIFF_fns.py",encoding="utf-8").read())
 
-final_path = _pathfinder_0104_navigator_GET_final_path()
+final_path = '/Users/yerik/Music/_1_NEW_SOURCE/_2025_this'#_pathfinder_0104_navigator_GET_final_path()
 print("\n📌 Final Selected Path:", final_path)
 
 import pandas as pd
 
-# Adjust settings to display all rows and columns
-pd.set_option('display.max_rows', None)  # Show all rows
-pd.set_option('display.max_columns', None)  # Show all columns
-pd.set_option('display.width', 1000)  # Set a wide display width to fit the content
-pd.set_option('display.max_colwidth', None)  # Show full column content without truncation
+# # Adjust settings to display all rows and columns
+# pd.set_option('display.max_rows', None)  # Show all rows
+# pd.set_option('display.max_columns', None)  # Show all columns
+# pd.set_option('display.width', 1000)  # Set a wide display width to fit the content
+# pd.set_option('display.max_colwidth', None)  # Show full column content without truncation
 
 #exec(open(f"/Users/yerik/_apple_source/_0_fns_MANAGER.py",encoding="utf-8").read()) # copy_fns()
 #%%writefile /Users/yerik/_apple_source/PY/functions/_GLOBAL/_2ms/_song_attr_mapping.py
