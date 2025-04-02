@@ -1,6 +1,4 @@
-git+https://github.com/aubio/aubio.git
-backports-datetime-fromisoformat==2.0.1
-
+aubio==0.4.9
 backports-datetime-fromisoformat==2.0.1
 coverage==5.5
 deprecation==2.1.0
