@@ -1,7 +1,7 @@
 exec(open("_all_fns_.py",encoding="utf-8").read())
 #
 #
-my_aiff = "/Users/yerik/Music/_1_NEW_SOURCE"#/_2025_this/test"
+my_aiff = "/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/test"
 ##
 #
 
@@ -99,7 +99,7 @@ print(df['title_file'].value_counts())
 # -----######-----######-----######-----######-----######-----######-----
 # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 # 
-# COMM ::: process METADATA : _1_artist
+# COMM ::: process METADATA : _2_artist
 #
 df = df = _artist_0204_id3_filefallback_GET_df_with_artist(df, 'artist', 'ARkw', 'MXkw')
 print('DONE with getting 2_artist')
@@ -118,6 +118,7 @@ print(df['artist_file'].value_counts())
 df = _label_0204_id3_filefallback_GET_df_with_LABEL(df, 'LABEL', 'LBkw', 'RYkw')
 print('DONE with getting 3_LABEL')
 print(df['label_file'].value_counts())
+df['LABEL'] = df['LABEL'].str.replace('_', ' ')
 
 ####
 ##
@@ -133,7 +134,7 @@ print(df['label_file'].value_counts())
 df = _genre_0204_id3_filefallback_GET_df_with_genre(df, 'genre', 'GNkw', 'RMkw')
 print('DONE with getting 4_genre')
 print(df['genre_file'].value_counts())
-
+df['genre'] = df['genre'].str.replace('_', ' ')
 ####
 ##
 #
@@ -164,6 +165,8 @@ print(df['rel_year_file'].value_counts())
 df = _key_0204_id3_filefallback_GET_df_with_key(df, 'KEY', 'KYkw', 'BPkw')
 print('DONE with getting 6_KEY')
 print(df['key_file'].value_counts())
+df['KEY'] = df['KEY'].str.replace('_', ' ')
+
 
 ####
 ##
@@ -220,9 +223,11 @@ print('DONE with WRITTING 7_mix_name & 8_remixer : to remixer')
 # -----######-----######-----######-----######-----######-----######-----
 # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 # 
-# COMM
+# COMM --------------- >> NOW WRITE GENRE BACK ::: 4_ genre for genre in REKORBOX
 #
-## re
+#!#!#!#!#! RUNNING STATEMENTS #!#!#!#!#!
+# To run the function, simply call it on your DataFrame:
+processed_count = _write_genre_id3_bulk(df, path_col="Path", genre_col="genre")
 ####
 ##
 #
@@ -235,9 +240,11 @@ print('DONE with WRITTING 7_mix_name & 8_remixer : to remixer')
 # -----######-----######-----######-----######-----######-----######-----
 # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 # 
-# COMM
+# COMM --------------- >> NOW WRITE LABEL BACK ::: 3_ LABEL for label in REKORBOX
 #
-## re
+#!#!#!#!#! RUNNING STATEMENTS #!#!#!#!#!
+#To run the function, simply call:
+processed_label_count = _write_label_id3_bulk(df, path_col="Path", label_col="LABEL")
 ####
 ##
 #

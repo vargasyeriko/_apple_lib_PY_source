@@ -1104,6 +1104,7 @@ def _datepurch_0204_filename_extract_GET_df_with_date_purchased(df):
 # ################### write back to ID3 tags
 
 # -----######----- FUNCTION: _aiff_0102_i1_GET_update_remixer_tpe4_tag -----######-----
+# -----######----- FUNCTION: _aiff_0102_i1_GET_update_remixer_tpe4_tag -----######-----
 import mutagen
 from mutagen.aiff import AIFF
 from mutagen.id3 import TPE4
@@ -1115,13 +1116,12 @@ def _aiff_0102_i1_GET_update_remixer_tpe4_tag(df):
     from the 'remixer' column (with underscores replaced by spaces) into the TPE4 frame
     (which Rekordbox uses for remix information).
 
+    If a file already contains a TPE4 tag (i.e. a remixer is already set), the file is skipped.
+
     Parameters:
         df (pandas.DataFrame): DataFrame with columns 'remixer' and 'Path'
-        
-    The function loads each AIFF file, adds ID3 tags if not present, removes any existing TPE4 frame,
-    and writes the cleaned remixer value to the TPE4 frame.
     """
-    for idx, row in tqdm(df.iterrows(), total=len(df), desc="Updating AIFF tags"):
+    for idx, row in tqdm(df.iterrows(), total=len(df), desc="Writing Remixer"):
         file_path = row['Path']
         # Replace underscores with spaces in the remixer value
         remixer_val = str(row['remixer']).replace("_", " ")
@@ -1137,10 +1137,13 @@ def _aiff_0102_i1_GET_update_remixer_tpe4_tag(df):
         if aiff_file.tags is None:
             aiff_file.add_tags()
         
-        # Remove any existing TPE4 frames
-        aiff_file.tags.delall("TPE4")
+        # Check if TPE4 tag is already present and has text
+        existing_tpe4 = aiff_file.tags.getall("TPE4")
+        if existing_tpe4 and any(frame.text for frame in existing_tpe4):
+            print(f"Skipping file ::: TPE4 tag already exists.")
+            continue
         
-        # Add a new TPE4 frame with the cleaned remixer value
+        # Add new TPE4 frame with the cleaned remixer value
         aiff_file.tags.add(TPE4(encoding=3, text=[remixer_val]))
         
         try:
@@ -1149,19 +1152,6 @@ def _aiff_0102_i1_GET_update_remixer_tpe4_tag(df):
             print(f"Error saving file {file_path}: {e}")
 
 
-####
-##
-#
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-
 
 ####
 ##
@@ -1170,10 +1160,135 @@ def _aiff_0102_i1_GET_update_remixer_tpe4_tag(df):
 # -----######-----######-----######-----######-----######-----######-----
 # 
 # -----######-----######-----######-----######-----######-----######-----
+# -----######-----###### 0_FNS: Primary Function(s) -----######-----######
+# -----######-----###### 0_FNS: Primary Function(s) -----######-----######
+import os
+from mutagen.aiff import AIFF
+from mutagen.id3 import TCON
+from tqdm import tqdm
+
+def _write_genre_id3_bulk(df, path_col='Path', genre_col='genre'):
+    """
+    Updates the ID3 genre tag (TCON) for AIFF files specified in the DataFrame.
+    Only processes rows where the 'genre_file' column equals "FILE_NAME".
+    
+    Parameters:
+        df (pandas.DataFrame): DataFrame containing:
+            - 'genre': The genre value to be written.
+            - 'genre_file': Contains two labels; only rows with "FILE_NAME" are processed.
+            - 'Path': The file path to the corresponding AIFF file.
+        path_col (str): Column name for file paths (default 'Path').
+        genre_col (str): Column name for genre values (default 'genre').
+    
+    Returns:
+        int: The total number of files successfully processed.
+    """
+    # Filter the DataFrame to only process rows with genre_file equal to "FILE_NAME"
+    df_filtered = df[df['genre_file'] == "FILE_NAME"].copy()
+    success_count = 0
+
+    # Iterate over the filtered DataFrame rows with a TQM progress bar
+    for _, row in tqdm(df_filtered.iterrows(), total=len(df_filtered), desc="Processing AIFF files"):
+        file_path = row[path_col]
+        genre_value = row[genre_col]
+        
+        # Check if the file exists
+        if not os.path.isfile(file_path):
+            print(f"File not found: {file_path}")
+            continue
+        
+        try:
+            # Load the AIFF file
+            audio = AIFF(file_path)
+            
+            # Add ID3 tags if they are missing
+            if not hasattr(audio, "tags") or audio.tags is None:
+                audio.add_tags()
+            
+            # Remove any existing genre tags (TCON frames)
+            if "TCON" in audio.tags:
+                del audio.tags["TCON"]
+            
+            # Add the new genre tag with UTF-8 encoding (encoding=3)
+            audio.tags.add(TCON(encoding=3, text=[genre_value]))
+            
+            # Save the updated tags back to the file
+            audio.save()
+            success_count += 1
+        except Exception as e:
+            print(f"Error processing file {file_path}: {e}")
+    
+    print(f"Total files processed: {success_count}")
+    return success_count
+
+
+
+####
+##
+#
 
 # -----######-----######-----######-----######-----######-----######-----
 # 
 # -----######-----######-----######-----######-----######-----######-----
+# -----######-----###### 0_FNS: Primary Function(s) -----######-----######
+import os
+from mutagen.aiff import AIFF
+from mutagen.id3 import TPUB
+from tqdm import tqdm
+
+def _write_label_id3_bulk(df, path_col='Path', label_col='LABEL'):
+    """
+    Updates the ID3 label tag (TPUB) for AIFF files specified in the DataFrame.
+    Only processes rows where the 'label_file' column equals "FILE_NAME".
+    
+    Parameters:
+        df (pandas.DataFrame): DataFrame containing:
+            - 'LABEL': The label value to be written.
+            - 'label_file': Contains two labels; only rows with "FILE_NAME" are processed.
+            - 'Path': The file path to the corresponding AIFF file.
+        path_col (str): Column name for file paths (default 'Path').
+        label_col (str): Column name for label values (default 'LABEL').
+    
+    Returns:
+        int: The total number of files successfully processed.
+    """
+    # Filter the DataFrame to only process rows with label_file equal to "FILE_NAME"
+    df_filtered = df[df['label_file'] == "FILE_NAME"].copy()
+    success_count = 0
+
+    # Iterate over the filtered DataFrame rows with a TQM progress bar
+    for _, row in tqdm(df_filtered.iterrows(), total=len(df_filtered), desc="Processing AIFF files for label"):
+        file_path = row[path_col]
+        label_value = row[label_col]
+        
+        # Check if the file exists
+        if not os.path.isfile(file_path):
+            print(f"File not found: {file_path}")
+            continue
+        
+        try:
+            # Load the AIFF file
+            audio = AIFF(file_path)
+            
+            # Add ID3 tags if they are missing
+            if not hasattr(audio, "tags") or audio.tags is None:
+                audio.add_tags()
+            
+            # Remove any existing label tags (TPUB frames)
+            if "TPUB" in audio.tags:
+                del audio.tags["TPUB"]
+            
+            # Add the new label tag with UTF-8 encoding (encoding=3)
+            audio.tags.add(TPUB(encoding=3, text=[label_value]))
+            
+            # Save the updated tags back to the file
+            audio.save()
+            success_count += 1
+        except Exception as e:
+            print(f"Error processing file {file_path}: {e}")
+    
+    print(f"Total files processed for label: {success_count}")
+    return success_count
 
 
 
