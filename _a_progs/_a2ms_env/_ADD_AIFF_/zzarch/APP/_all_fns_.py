@@ -245,7 +245,7 @@ def _audio_attr_extract_11_INFO_AIFF(df, audio_extensions):
     df['error'] = None
     
     # Iterate over the DataFrame rows with TQM progress bar
-    for index, row in tqdm(df.iterrows(), total=len(df), desc="Processing Audio Files"):
+    for index, row in tqdm(df.iterrows(), total=len(df), desc="Audio file Attributes"):
         file_path = row['Path']
         audio_attributes = {
             'dur_seconds': None,
@@ -308,9 +308,590 @@ def _audio_attr_extract_11_INFO_AIFF(df, audio_extensions):
     return df
 
 # -----######-----######-----######-----######-----######-----######-----
+# LUFS
+# -----######-----######-----######-----######-----######-----######-----
+import numpy as np
+import pandas as pd
+from pydub import AudioSegment
+from pyloudnorm import Meter
+from tqdm import tqdm
+
+def compute_lufs_for_paths_AIFF(paths):
+    # Create a loudness meter (rate will be updated for each file)
+    meter = Meter(rate=44100)  # default rate, will be changed for each file
+
+    lufs_results = []
+
+    # Wrap your loop with tqdm for a progress bar
+    for file_path in tqdm(paths, desc="Computing LUFS", unit="file"):
+
+        try:
+            # Load the audio file using pydub
+            audio = AudioSegment.from_file(file_path)
+
+            # Convert audio to WAV format and get channels data
+            samples = np.array(audio.get_array_of_samples())
+
+            # Convert integer samples to floating point and normalize
+            samples = samples / (2**15)
+
+            # Check if stereo or mono
+            if audio.channels == 2:
+                samples = samples.reshape((-1, 2))
+            else:
+                samples = samples.reshape((-1, 1))
+
+            # Update the sample rate of the meter
+            meter.rate = audio.frame_rate
+
+            # Compute LUFS
+            loudness = meter.integrated_loudness(samples)
+
+            lufs_results.append(round(loudness, 3))
+
+        except Exception as e:
+            print(f"Error processing {file_path}: {e}")
+            lufs_results.append(None)  # Append None for the failed computation, keeping the list lengths in sync
+
+    return lufs_results
+
+# -----######-----###### LUFS Mapping Function -----######-----######
+def _all_values_CREATE_12_LUFS_categories(lufs_value):
+    """
+    Maps LUFS values to energy levels.
+
+    Parameters:
+    lufs_value (float): The LUFS value.
+
+    Returns:
+    str: Energy level code corresponding to LUFS value.
+    """
+    if lufs_value is None:
+        return None
+    elif lufs_value <= -18:
+        return 'LuA'
+    elif -18 < lufs_value <= -16:
+        return 'LuB'
+    elif -16 < lufs_value <= -14:
+        return 'LuC'
+    elif -14 < lufs_value <= -12:
+        return 'LuD'
+    elif -12 < lufs_value <= -10:
+        return 'Lue'
+    else:
+        return 'LuF'
+
+####
+##
+#
+
+# -----######-----######-----######-----######-----######-----######-----
+# 
+# -----######-----######-----######-----######-----######-----######-----
+# BPM dynamic vs normal 
+# -----######-----######-----######-----######-----######-----######-----
+# 
+# -----######-----######-----######-----######-----######-----######-----
+# 0_FNS: Core functions for BPM variation detection in AIFF files using DF attributes, TQDM, 
+# BPM Consistency Index, and configurable exclusion of track intros/outros
+
+import numpy as np
+import pandas as pd
+import librosa
+from tqdm import tqdm  # For progress bar
+from collections import Counter
+
+def _bpm_2409_i1_GET_bpm_variation(
+    filepath: str,
+    target_sr: int = None,
+    window_sec: float = 10.0,
+    hop_sec: float = 5.0,
+    exclude_start_pct: float = 0.1,
+    exclude_end_pct: float = 0.1
+):
+    """
+    Analyze an AIFF audio file to compute BPM variation metrics and a single BPM Consistency Index,
+    excluding a configurable percentage of the track from both the start and end (to avoid intros/outros).
+    
+    The function loads the file using the provided sample rate (if any), normalizes the audio,
+    excludes the specified portions, splits the remaining audio into overlapping windows, and computes
+    the BPM for each segment. BPM values are rounded and aggregated to calculate the BPM Consistency Index
+    (percentage of windows with the dominant BPM).
+    
+    Parameters:
+        filepath (str): Path to the AIFF file.
+        target_sr (int): Sample rate from your DataFrame. If None, the file's native rate is used.
+        window_sec (float): Duration in seconds for each analysis window (default: 10 sec).
+        hop_sec (float): Hop duration in seconds between windows (default: 5 sec).
+        exclude_start_pct (float): Percentage of the track to exclude from the start (default: 0.1 or 10%).
+        exclude_end_pct (float): Percentage of the track to exclude from the end (default: 0.1 or 10%).
+    
+    Returns:
+        dict: BPM variation metrics including:
+            - 'mean_bpm': Mean BPM across windows.
+            - 'std_bpm': Standard deviation of BPM.
+            - 'min_bpm': Minimum BPM.
+            - 'max_bpm': Maximum BPM.
+            - 'variation_percentage': (std_bpm / mean_bpm * 100).
+            - 'dominant_bpm': The most frequent rounded BPM value.
+            - 'bpm_consistency': Percentage of windows with the dominant BPM (the single pointer).
+    """
+    try:
+        y, sr = librosa.load(filepath, sr=target_sr)
+    except Exception as e:
+        # Return NaN metrics if file loading fails
+        return {
+            'mean_bpm': np.nan,
+            'std_bpm': np.nan,
+            'min_bpm': np.nan,
+            'max_bpm': np.nan,
+            'variation_percentage': np.nan,
+            'dominant_bpm': np.nan,
+            'bpm_consistency': np.nan
+        }
+    
+    # Normalize the audio in memory
+    if np.max(np.abs(y)) > 0:
+        y = y / np.max(np.abs(y))
+    
+    # Exclude intro and outro portions based on specified percentages
+    total_samples = len(y)
+    start_idx = int(total_samples * exclude_start_pct)
+    end_idx = int(total_samples * (1 - exclude_end_pct))
+    y = y[start_idx:end_idx]
+    
+    window_length = int(window_sec * sr)
+    hop_length = int(hop_sec * sr)
+    bpm_values = []
+    
+    # Process the audio in overlapping windows
+    for start in range(0, len(y) - window_length + 1, hop_length):
+        segment = y[start:start + window_length]
+        # Attempt using the updated API; fall back if not available.
+        try:
+            tempo = librosa.feature.rhythm.tempo(y=segment, sr=sr, aggregate=np.median)
+        except AttributeError:
+            tempo = librosa.beat.tempo(y=segment, sr=sr, aggregate=np.median)
+        bpm_values.append(tempo[0])
+    
+    bpm_array = np.array(bpm_values)
+    mean_bpm = np.mean(bpm_array)
+    std_bpm = np.std(bpm_array)
+    min_bpm = np.min(bpm_array)
+    max_bpm = np.max(bpm_array)
+    variation_percentage = (std_bpm / mean_bpm * 100) if mean_bpm != 0 else 0
+    
+    # Aggregate the BPM values by rounding to the nearest integer and compute frequency distribution
+    rounded_bpms = [round(b) for b in bpm_values] if bpm_values else []
+    counter = Counter(rounded_bpms)
+    if counter:
+        dominant_bpm, dominant_count = counter.most_common(1)[0]
+        total_count = sum(counter.values())
+        bpm_consistency = dominant_count / total_count * 100
+    else:
+        dominant_bpm = np.nan
+        bpm_consistency = np.nan
+    
+    return {
+        'mean_bpm': mean_bpm,
+        'std_bpm': std_bpm,
+        'min_bpm': min_bpm,
+        'max_bpm': max_bpm,
+        'variation_percentage': variation_percentage,
+        'dominant_bpm': dominant_bpm,
+        'bpm_consistency': bpm_consistency
+    }
+
+def _df_bpm_2409_i1_GET_df_bpm_variation(
+    input_df: pd.DataFrame,
+    path_column: str = 'Path',
+    sr_column: str = 'sr',
+    window_sec: float = 10.0,
+    hop_sec: float = 5.0,
+    exclude_start_pct: float = 0.1,
+    exclude_end_pct: float = 0.1
+) -> pd.DataFrame:
+    """
+    Process a DataFrame of AIFF file paths and append BPM variation metrics including the BPM Consistency Index.
+    Allows exclusion of a configurable percentage of the track's start and end to avoid distorting intros/outros.
+    
+    For each file in the specified column, the function uses the sample rate provided in the DataFrame
+    to compute BPM metrics and appends the following new columns:
+        - 'mean_bpm'
+        - 'std_bpm'
+        - 'min_bpm'
+        - 'max_bpm'
+        - 'variation_percentage'
+        - 'dominant_bpm'
+        - 'bpm_consistency'
+    
+    Parameters:
+        input_df (pd.DataFrame): DataFrame containing file attribute columns.
+        path_column (str): Column name with file paths (default: 'Path').
+        sr_column (str): Column name with sample rate (default: 'sr').
+        window_sec (float): Analysis window duration in seconds.
+        hop_sec (float): Hop duration in seconds between windows.
+        exclude_start_pct (float): Percentage of the track to exclude from the start (default: 0.1).
+        exclude_end_pct (float): Percentage of the track to exclude from the end (default: 0.1).
+    
+    Returns:
+        pd.DataFrame: The original DataFrame with BPM variation metrics appended.
+    """
+    results = {
+        'mean_bpm': [],
+        'std_bpm': [],
+        'min_bpm': [],
+        'max_bpm': [],
+        'variation_percentage': [],
+        'dominant_bpm': [],
+        'bpm_consistency': []
+    }
+    
+    # Iterate over each file path with a TQDM progress bar
+    for idx, row in tqdm(input_df.iterrows(), total=input_df.shape[0], desc="Processing BPM Dynamic"):
+        file_path = row[path_column]
+        target_sr = int(row[sr_column]) if pd.notna(row[sr_column]) else None
+        bpm_result = _bpm_2409_i1_GET_bpm_variation(
+            file_path,
+            target_sr=target_sr,
+            window_sec=window_sec,
+            hop_sec=hop_sec,
+            exclude_start_pct=exclude_start_pct,
+            exclude_end_pct=exclude_end_pct
+        )
+        results['mean_bpm'].append(bpm_result['mean_bpm'])
+        results['std_bpm'].append(bpm_result['std_bpm'])
+        results['min_bpm'].append(bpm_result['min_bpm'])
+        results['max_bpm'].append(bpm_result['max_bpm'])
+        results['variation_percentage'].append(bpm_result['variation_percentage'])
+        results['dominant_bpm'].append(bpm_result['dominant_bpm'])
+        results['bpm_consistency'].append(bpm_result['bpm_consistency'])
+    
+    # Append new columns to a copy of the original DataFrame
+    input_df = input_df.copy()
+    input_df['mean_bpm'] = results['mean_bpm']
+    input_df['std_bpm'] = results['std_bpm']
+    input_df['min_bpm'] = results['min_bpm']
+    input_df['max_bpm'] = results['max_bpm']
+    input_df['variation_percentage'] = results['variation_percentage']
+    input_df['dominant_bpm'] = results['dominant_bpm']
+    input_df['bpm_consistency'] = results['bpm_consistency']
+    
+    return input_df
+
+# 0_FNS: Core Function to Categorize bpm_consistency
+# ----------------------------------------------------
+import numpy as np
+import pandas as pd
+
+def _cat_0204_bpm_consistency_GET_cat(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Categorizes the 'bpm_consistency' column in the provided DataFrame.
+    
+    The categorization is as follows:
+      - 0 <= bpm_consistency < 50   : 'D_9'
+      - 50 <= bpm_consistency < 85  : 'D_6'
+      - 85 <= bpm_consistency < 95  : 'D_3'
+      - 95 <= bpm_consistency < 98  : 'D_1'
+      - 98 <= bpm_consistency <= 100: 'D_0'
+    
+    Parameters:
+      df (pd.DataFrame): DataFrame with a 'bpm_consistency' column.
+    
+    Returns:
+      pd.DataFrame: The DataFrame with an additional column 'bpm_consistency_cat'.
+    """
+    # #### TQM BAR: [==============================] Ensuring Quality Metrics
+    
+    conditions = [
+        (df['bpm_consistency'] < 50),
+        (df['bpm_consistency'] >= 50) & (df['bpm_consistency'] < 85),
+        (df['bpm_consistency'] >= 85) & (df['bpm_consistency'] < 95),
+        (df['bpm_consistency'] >= 95) & (df['bpm_consistency'] < 98),
+        (df['bpm_consistency'] >= 98) & (df['bpm_consistency'] <= 100)
+    ]
+    choices = ['D_9', 'D_6', 'D_3', 'D_1', 'D_0']
+    
+    # Apply categorization using numpy.select
+    df['bpm_consistency_cat'] = np.select(conditions, choices, default='Unknown')
+    return df
+
+
+
+####
+##
+#
+
+# -----######-----######-----######-----######-----######-----######-----
+# 
+# -----######-----######-----######-----######-----######-----######-----
+# METADATA ::: 1 = title
+# -----######-----######-----######-----######-----######-----######-----
 # 
 # -----######-----######-----######-----######-----######-----######-----
 
+
+######## 
+from mutagen import File
+from tqdm import tqdm
+
+def _titile_0204_id3_filefallback_GET_df_with_titile(df, var, btw_front, btw_back):
+    import os
+
+    # Storage
+    titiles = []
+    title_files = []
+
+    for path in tqdm(df['Path'], desc="Extracting ID3 Titles"):
+        title_from_tag = None
+        try:
+            audio = File(path)
+            if audio and hasattr(audio, "tags") and audio.tags:
+                tag = audio.tags.get("TIT2")
+                if tag:
+                    title_from_tag = str(tag).strip()
+        except Exception:
+            title_from_tag = None
+
+        if title_from_tag:
+            titiles.append(title_from_tag)
+            title_files.append("ID3TAGS")
+        else:
+            titiles.append(None)
+            title_files.append("FILE_NAME")
+
+    # Append interim results
+    df['titile'] = titiles
+    df['title_file'] = title_files
+
+    # Define fallback function (embedded for independence)
+    def _file_extract_from_file_name_(df, var, btw_front, btw_back):
+        empty_values = [None, "", "None", "NAN", "NaN", "nan","Error: argument of type 'NoneType' is not iterable"]
+        missing_title_idx = df[f'{var}'].isin(empty_values) | df[f'{var}'].isnull()
+
+        def extract_title_from_temp_id(temp_id):
+            if isinstance(temp_id, str) and f"{btw_front}" in temp_id and f"{btw_back}" in temp_id:
+                start = temp_id.find(f"{btw_front}") + len(btw_front)
+                end = temp_id.find(f"{btw_back}", start)
+                return temp_id[start:end].strip()
+            return None
+
+        df.loc[missing_title_idx, f'{var}'] = df.loc[missing_title_idx, 'temp_id'].apply(extract_title_from_temp_id)
+        return df
+
+    # Apply fallback where titile is still missing
+    df_missing = df[df['titile'].isnull()].copy()
+    if not df_missing.empty:
+        df_missing['title'] = df_missing.get('title', None)  # fallback expects 'title' column
+        df_fallback = _file_extract_from_file_name_(df_missing, var, btw_front, btw_back)
+        df.loc[df_fallback.index, 'titile'] = df_fallback[var]
+
+    return df
+
+####
+##
+#
+
+# -----######-----######-----######-----######-----######-----######-----
+# 
+# -----######-----######-----######-----######-----######-----######-----
+# # METADATA ::: 2 = artist
+# -----######-----######-----######-----######-----######-----######-----
+# 
+# -----######-----######-----######-----######-----######-----######-----
+
+
+# -----######-----######-----######-----######-----######-----
+# GET ARTIST FROM ID3 OR FILENAME (W/ FALLBACK & SOURCE FLAG)
+# -----######-----######-----######-----######-----######-----
+
+from mutagen import File
+from tqdm import tqdm
+
+def _artist_0204_id3_filefallback_GET_df_with_artist(df, var, btw_front, btw_back):
+    import os
+
+    # Storage
+    artists = []
+    artist_sources = []
+
+    for path in tqdm(df['Path'], desc="Extracting ID3 Artists"):
+        artist_from_tag = None
+        try:
+            audio = File(path)
+            if audio and hasattr(audio, "tags") and audio.tags:
+                tag = audio.tags.get("TPE1")  # Artist tag
+                if tag:
+                    artist_from_tag = str(tag).strip()
+        except Exception:
+            artist_from_tag = None
+
+        if artist_from_tag:
+            artists.append(artist_from_tag)
+            artist_sources.append("ID3TAGS")
+        else:
+            artists.append(None)
+            artist_sources.append("FILE_NAME")
+
+    # Append interim results
+    df['artist'] = artists
+    df['artist_file'] = artist_sources
+
+    # Define fallback function (embedded for independence)
+    def _file_extract_from_file_name_(df, var, btw_front, btw_back):
+        empty_values = [None, "", "None", "NAN", "NaN", "nan","Error: argument of type 'NoneType' is not iterable"]
+        missing_artist_idx = df[f'{var}'].isin(empty_values) | df[f'{var}'].isnull()
+
+        def extract_artist_from_temp_id(temp_id):
+            if isinstance(temp_id, str) and f"{btw_front}" in temp_id and f"{btw_back}" in temp_id:
+                start = temp_id.find(f"{btw_front}") + len(btw_front)
+                end = temp_id.find(f"{btw_back}", start)
+                return temp_id[start:end].strip()
+            return None
+
+        df.loc[missing_artist_idx, f'{var}'] = df.loc[missing_artist_idx, 'temp_id'].apply(extract_artist_from_temp_id)
+        return df
+
+    # Apply fallback where artist is still missing
+    df_missing = df[df['artist'].isnull()].copy()
+    if not df_missing.empty:
+        df_missing[var] = df_missing.get(var, None)  # fallback expects the target var
+        df_fallback = _file_extract_from_file_name_(df_missing, var, btw_front, btw_back)
+        df.loc[df_fallback.index, 'artist'] = df_fallback[var]
+
+    return df
+
+####
+##
+#
+
+
+# # METADATA ::: 3 = LABEL
+# -----######-----######-----######-----######-----######-----
+# GET LABEL FROM ID3 OR FILENAME (W/ FALLBACK & SOURCE FLAG)
+# -----######-----######-----######-----######-----######-----
+
+from mutagen import File
+from tqdm import tqdm
+
+def _label_0204_id3_filefallback_GET_df_with_LABEL(df, var, btw_front, btw_back):
+    import os
+
+    # Storage
+    labels = []
+    label_sources = []
+
+    for path in tqdm(df['Path'], desc="Extracting ID3 Labels"):
+        label_from_tag = None
+        try:
+            audio = File(path)
+            if audio and hasattr(audio, "tags") and audio.tags:
+                tag = audio.tags.get("TPUB")  # Publisher tag (used for LABEL)
+                if tag:
+                    label_from_tag = str(tag).strip()
+        except Exception:
+            label_from_tag = None
+
+        if label_from_tag:
+            labels.append(label_from_tag)
+            label_sources.append("ID3TAGS")
+        else:
+            labels.append(None)
+            label_sources.append("FILE_NAME")
+
+    # Append interim results
+    df['LABEL'] = labels
+    df['label_file'] = label_sources
+
+    # Define fallback function (embedded for independence)
+    def _file_extract_from_file_name_(df, var, btw_front, btw_back):
+        empty_values = [None, "", "None", "NAN", "NaN", "nan","Error: argument of type 'NoneType' is not iterable"]
+        missing_label_idx = df[f'{var}'].isin(empty_values) | df[f'{var}'].isnull()
+
+        def extract_label_from_temp_id(temp_id):
+            if isinstance(temp_id, str) and f"{btw_front}" in temp_id and f"{btw_back}" in temp_id:
+                start = temp_id.find(f"{btw_front}") + len(btw_front)
+                end = temp_id.find(f"{btw_back}", start)
+                return temp_id[start:end].strip()
+            return None
+
+        df.loc[missing_label_idx, f'{var}'] = df.loc[missing_label_idx, 'temp_id'].apply(extract_label_from_temp_id)
+        return df
+
+    # Apply fallback where LABEL is still missing
+    df_missing = df[df['LABEL'].isnull()].copy()
+    if not df_missing.empty:
+        df_missing[var] = df_missing.get(var, None)  # fallback expects the target var
+        df_fallback = _file_extract_from_file_name_(df_missing, var, btw_front, btw_back)
+        df.loc[df_fallback.index, 'LABEL'] = df_fallback[var]
+
+    return df
+
+
+####
+##
+#
+
+# -----######-----######-----######-----######-----######-----######-----
+# 
+# -----######-----######-----######-----######-----######-----######-----
+# -----######-----######-----######-----######-----######-----
+# GET GENRE FROM ID3 OR FILENAME (W/ FALLBACK & SOURCE FLAG)
+# -----######-----######-----######-----######-----######-----
+
+from mutagen import File
+from tqdm import tqdm
+
+def _genre_0204_id3_filefallback_GET_df_with_genre(df, var, btw_front, btw_back):
+    import os
+
+    genres = []
+    genre_sources = []
+
+    for path in tqdm(df['Path'], desc="Extracting ID3 Genres"):
+        genre_from_tag = None
+        try:
+            audio = File(path)
+            if audio and hasattr(audio, "tags") and audio.tags:
+                tag = audio.tags.get("TCON")  # Genre tag
+                if tag:
+                    genre_from_tag = str(tag).strip()
+        except Exception:
+            genre_from_tag = None
+
+        if genre_from_tag:
+            genres.append(genre_from_tag)
+            genre_sources.append("ID3TAGS")
+        else:
+            genres.append(None)
+            genre_sources.append("FILE_NAME")
+
+    df['genre'] = genres
+    df['genre_file'] = genre_sources
+
+    # Define fallback function (embedded)
+    def _file_extract_from_file_name_(df, var, btw_front, btw_back):
+        empty_values = [None, "", "None", "NAN", "NaN", "nan", "Error: argument of type 'NoneType' is not iterable"]
+        missing_genre_idx = df[f'{var}'].isin(empty_values) | df[f'{var}'].isnull()
+
+        def extract_genre_from_temp_id(temp_id):
+            if isinstance(temp_id, str) and btw_front in temp_id and btw_back in temp_id:
+                start = temp_id.find(btw_front) + len(btw_front)
+                end = temp_id.find(btw_back, start)
+                return temp_id[start:end].strip()
+            return None
+
+        df.loc[missing_genre_idx, f'{var}'] = df.loc[missing_genre_idx, 'temp_id'].apply(extract_genre_from_temp_id)
+        return df
+
+    # Apply fallback where genre is missing
+    df_missing = df[df['genre'].isnull()].copy()
+    if not df_missing.empty:
+        df_missing[var] = df_missing.get(var, None)
+        df_fallback = _file_extract_from_file_name_(df_missing, var, btw_front, btw_back)
+        df.loc[df_fallback.index, 'genre'] = df_fallback[var]
+
+    return df
 
 
 ####
@@ -326,6 +907,163 @@ def _audio_attr_extract_11_INFO_AIFF(df, audio_extensions):
 # -----######-----######-----######-----######-----######-----######-----
 
 
+# -----######-----######-----######-----######-----######-----
+# GET RELEASE YEAR FROM ID3 OR FILENAME (W/ FALLBACK & SOURCE FLAG)
+# -----######-----######-----######-----######-----######-----
+
+from mutagen import File
+from tqdm import tqdm
+
+def _relyear_0204_id3_filefallback_GET_df_with_rel_year(df, var, btw_front, btw_back):
+    import os
+
+    rel_years = []
+    rel_year_sources = []
+
+    for path in tqdm(df['Path'], desc="Extracting ID3 Release Year"):
+        year_from_tag = None
+        try:
+            audio = File(path)
+            if audio and hasattr(audio, "tags") and audio.tags:
+                tag = audio.tags.get("TDRC")  # Recording time tag (usually YYYY)
+                if tag:
+                    year_from_tag = str(tag).strip()
+                    if len(year_from_tag) >= 4:
+                        year_from_tag = year_from_tag[:4]  # Extract only YYYY
+        except Exception:
+            year_from_tag = None
+
+        if year_from_tag:
+            rel_years.append(year_from_tag)
+            rel_year_sources.append("ID3TAGS")
+        else:
+            rel_years.append(None)
+            rel_year_sources.append("FILE_NAME")
+
+    df['rel_year'] = rel_years
+    df['rel_year_file'] = rel_year_sources
+
+    # Define fallback function (embedded)
+    def _file_extract_from_file_name_(df, var, btw_front, btw_back):
+        empty_values = [None, "", "None", "NAN", "NaN", "nan", "Error: argument of type 'NoneType' is not iterable"]
+        missing_year_idx = df[f'{var}'].isin(empty_values) | df[f'{var}'].isnull()
+
+        def extract_year_from_temp_id(temp_id):
+            if isinstance(temp_id, str) and btw_front in temp_id and btw_back in temp_id:
+                start = temp_id.find(btw_front) + len(btw_front)
+                end = temp_id.find(btw_back, start)
+                return temp_id[start:end].strip()
+            return None
+
+        df.loc[missing_year_idx, f'{var}'] = df.loc[missing_year_idx, 'temp_id'].apply(extract_year_from_temp_id)
+        return df
+
+    # Apply fallback
+    df_missing = df[df['rel_year'].isnull()].copy()
+    if not df_missing.empty:
+        df_missing[var] = df_missing.get(var, None)
+        df_fallback = _file_extract_from_file_name_(df_missing, var, btw_front, btw_back)
+        df.loc[df_fallback.index, 'rel_year'] = df_fallback[var]
+
+    return df
+
+
+####
+##
+#
+
+
+# -----######-----######-----######-----######-----######-----
+# GET MUSICAL KEY FROM ID3 OR FILENAME (W/ FALLBACK & SOURCE FLAG)
+# -----######-----######-----######-----######-----######-----
+
+from mutagen import File
+from tqdm import tqdm
+
+def _key_0204_id3_filefallback_GET_df_with_key(df, var, btw_front, btw_back):
+    import os
+
+    keys = []
+    key_sources = []
+
+    for path in tqdm(df['Path'], desc="Extracting ID3 Key"):
+        key_from_tag = None
+        try:
+            audio = File(path)
+            if audio and hasattr(audio, "tags") and audio.tags:
+                tag = audio.tags.get("TKEY")  # Musical key tag
+                if tag:
+                    key_from_tag = str(tag).strip()
+        except Exception:
+            key_from_tag = None
+
+        if key_from_tag:
+            keys.append(key_from_tag)
+            key_sources.append("ID3TAGS")
+        else:
+            keys.append(None)
+            key_sources.append("FILE_NAME")
+
+    df['KEY'] = keys
+    df['key_file'] = key_sources
+
+    # Define fallback function (embedded)
+    def _file_extract_from_file_name_(df, var, btw_front, btw_back):
+        empty_values = [None, "", "None", "NAN", "NaN", "nan", "Error: argument of type 'NoneType' is not iterable"]
+        missing_key_idx = df[f'{var}'].isin(empty_values) | df[f'{var}'].isnull()
+
+        def extract_key_from_temp_id(temp_id):
+            if isinstance(temp_id, str) and btw_front in temp_id and btw_back in temp_id:
+                start = temp_id.find(btw_front) + len(btw_front)
+                end = temp_id.find(btw_back, start)
+                return temp_id[start:end].strip()
+            return None
+
+        df.loc[missing_key_idx, f'{var}'] = df.loc[missing_key_idx, 'temp_id'].apply(extract_key_from_temp_id)
+        return df
+
+    # Apply fallback
+    df_missing = df[df['KEY'].isnull()].copy()
+    if not df_missing.empty:
+        df_missing[var] = df_missing.get(var, None)
+        df_fallback = _file_extract_from_file_name_(df_missing, var, btw_front, btw_back)
+        df.loc[df_fallback.index, 'KEY'] = df_fallback[var]
+
+    return df
+
+
+
+####
+##
+#
+
+# -----######-----######-----######-----######-----######-----######-----
+# 
+# -----######-----######-----######-----######-----######-----######-----
+
+
+# -----######-----######-----######-----######-----######-----######-----
+# 
+# -----######-----######-----######-----######-----######-----######-----
+
+# -----######-----######-----######-----######-----######-----
+# EXTRACT MIX NAME & REMIXER FROM TEMP_ID (FILENAME PATTERN)
+# -----######-----######-----######-----######-----######-----
+
+def _mixremix_0204_filename_extract_GET_df_mix_and_remixer(df):
+    def extract_between(temp_id, front, back):
+        if isinstance(temp_id, str) and front in temp_id and back in temp_id:
+            start = temp_id.find(front) + len(front)
+            end = temp_id.find(back, start)
+            content = temp_id[start:end].strip('_ ').strip()
+            return content if content else None
+        return None
+
+    df['mix_name'] = df['temp_id'].apply(lambda x: extract_between(x, 'MXkw_', 'KYkw_'))
+    df['remixer'] = df['temp_id'].apply(lambda x: extract_between(x, 'RMkw_', 'LBkw_'))
+    df['remixer'] = df['remixer'] + ' '+ df['mix_name']
+    return df
+
 
 ####
 ##
@@ -339,133 +1077,76 @@ def _audio_attr_extract_11_INFO_AIFF(df, audio_extensions):
 # 
 # -----######-----######-----######-----######-----######-----######-----
 
+# -----######-----######-----######-----######-----######-----
+# EXTRACT PURCHASE DATE (AFTER PYkw_) FROM TEMP_ID STRING
+# -----######-----######-----######-----######-----######-----
+
+import re
+import pandas as pd
+
+def _datepurch_0204_filename_extract_GET_df_with_date_purchased(df):
+    def extract_purchase_date(temp_id):
+        if isinstance(temp_id, str):
+            match = re.search(r'PYkw_(\d{4})_(\d{2})_(\d{2})', temp_id)
+            if match:
+                try:
+                    return pd.to_datetime(f"{match.group(1)}-{match.group(2)}-{match.group(3)}")
+                except Exception:
+                    return None
+        return None
+
+    df['date_purchased'] = df['temp_id'].apply(extract_purchase_date)
+    return df
 
 
 ####
 ##
-#
+# ################### write back to ID3 tags
 
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
+# -----######----- FUNCTION: _aiff_0102_i1_GET_update_remixer_tpe4_tag -----######-----
+import mutagen
+from mutagen.aiff import AIFF
+from mutagen.id3 import TPE4
+from tqdm import tqdm
 
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
+def _aiff_0102_i1_GET_update_remixer_tpe4_tag(df):
+    """
+    Updates the 'Remixer' tag in each AIFF file specified in the DataFrame by writing the value 
+    from the 'remixer' column (with underscores replaced by spaces) into the TPE4 frame
+    (which Rekordbox uses for remix information).
 
-
-
-####
-##
-#
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-
-
-####
-##
-#
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-
-
-####
-##
-#
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-
-
-####
-##
-#
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-
-
-####
-##
-#
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-
-
-####
-##
-#
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-
-
-####
-##
-#
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-
-
-####
-##
-#
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
-# -----######-----######-----######-----######-----######-----######-----
-# 
-# -----######-----######-----######-----######-----######-----######-----
-
+    Parameters:
+        df (pandas.DataFrame): DataFrame with columns 'remixer' and 'Path'
+        
+    The function loads each AIFF file, adds ID3 tags if not present, removes any existing TPE4 frame,
+    and writes the cleaned remixer value to the TPE4 frame.
+    """
+    for idx, row in tqdm(df.iterrows(), total=len(df), desc="Updating AIFF tags"):
+        file_path = row['Path']
+        # Replace underscores with spaces in the remixer value
+        remixer_val = str(row['remixer']).replace("_", " ")
+        
+        try:
+            # Load the AIFF file
+            aiff_file = AIFF(file_path)
+        except Exception as e:
+            print(f"Error opening file {file_path}: {e}")
+            continue
+        
+        # Add ID3 tags if they don't exist
+        if aiff_file.tags is None:
+            aiff_file.add_tags()
+        
+        # Remove any existing TPE4 frames
+        aiff_file.tags.delall("TPE4")
+        
+        # Add a new TPE4 frame with the cleaned remixer value
+        aiff_file.tags.add(TPE4(encoding=3, text=[remixer_val]))
+        
+        try:
+            aiff_file.save()
+        except Exception as e:
+            print(f"Error saving file {file_path}: {e}")
 
 
 ####
