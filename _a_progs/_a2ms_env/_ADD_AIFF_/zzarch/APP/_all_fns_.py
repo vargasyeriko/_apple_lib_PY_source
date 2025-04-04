@@ -1061,7 +1061,7 @@ def _mixremix_0204_filename_extract_GET_df_mix_and_remixer(df):
 
     df['mix_name'] = df['temp_id'].apply(lambda x: extract_between(x, 'MXkw_', 'KYkw_'))
     df['remixer'] = df['temp_id'].apply(lambda x: extract_between(x, 'RMkw_', 'LBkw_'))
-    df['remixer'] = df['remixer'] + ' '+ df['mix_name']
+    
     return df
 
 
@@ -1121,7 +1121,7 @@ def _aiff_0102_i1_GET_update_remixer_tpe4_tag(df):
     Parameters:
         df (pandas.DataFrame): DataFrame with columns 'remixer' and 'Path'
     """
-    for idx, row in tqdm(df.iterrows(), total=len(df), desc="Writing Remixer"):
+    for idx, row in tqdm(df.iterrows(), total=len(df), desc="Writtng AIFF files for : remixer"):
         file_path = row['Path']
         # Replace underscores with spaces in the remixer value
         remixer_val = str(row['remixer']).replace("_", " ")
@@ -1140,7 +1140,6 @@ def _aiff_0102_i1_GET_update_remixer_tpe4_tag(df):
         # Check if TPE4 tag is already present and has text
         existing_tpe4 = aiff_file.tags.getall("TPE4")
         if existing_tpe4 and any(frame.text for frame in existing_tpe4):
-            print(f"Skipping file ::: TPE4 tag already exists.")
             continue
         
         # Add new TPE4 frame with the cleaned remixer value
@@ -1188,7 +1187,7 @@ def _write_genre_id3_bulk(df, path_col='Path', genre_col='genre'):
     success_count = 0
 
     # Iterate over the filtered DataFrame rows with a TQM progress bar
-    for _, row in tqdm(df_filtered.iterrows(), total=len(df_filtered), desc="Processing AIFF files"):
+    for _, row in tqdm(df_filtered.iterrows(), total=len(df_filtered), desc="Writtng AIFF files for : genre"):
         file_path = row[path_col]
         genre_value = row[genre_col]
         
@@ -1257,7 +1256,7 @@ def _write_label_id3_bulk(df, path_col='Path', label_col='LABEL'):
     success_count = 0
 
     # Iterate over the filtered DataFrame rows with a TQM progress bar
-    for _, row in tqdm(df_filtered.iterrows(), total=len(df_filtered), desc="Processing AIFF files for label"):
+    for _, row in tqdm(df_filtered.iterrows(), total=len(df_filtered), desc="Writtng AIFF files for : label"):
         file_path = row[path_col]
         label_value = row[label_col]
         

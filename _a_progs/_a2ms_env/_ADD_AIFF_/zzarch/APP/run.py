@@ -1,7 +1,7 @@
 exec(open("_all_fns_.py",encoding="utf-8").read())
 #
 #
-my_aiff = "/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/test"
+my_aiff = "/Volumes/MUSIC_PROD/_1_NEW_SOURCE copy"
 ##
 #
 
@@ -118,7 +118,7 @@ print(df['artist_file'].value_counts())
 df = _label_0204_id3_filefallback_GET_df_with_LABEL(df, 'LABEL', 'LBkw', 'RYkw')
 print('DONE with getting 3_LABEL')
 print(df['label_file'].value_counts())
-df['LABEL'] = df['LABEL'].str.replace('_', ' ')
+df['LABEL'] = df['LABEL'].str.replace('_', ' ').str.replace(r'^[^a-zA-Z]+', '', regex=True)
 
 ####
 ##
@@ -134,7 +134,7 @@ df['LABEL'] = df['LABEL'].str.replace('_', ' ')
 df = _genre_0204_id3_filefallback_GET_df_with_genre(df, 'genre', 'GNkw', 'RMkw')
 print('DONE with getting 4_genre')
 print(df['genre_file'].value_counts())
-df['genre'] = df['genre'].str.replace('_', ' ')
+df['genre'] = df['genre'].str.replace('_', ' ').str.replace(r'^[^a-zA-Z]+', '', regex=True)
 ####
 ##
 #
@@ -165,7 +165,7 @@ print(df['rel_year_file'].value_counts())
 df = _key_0204_id3_filefallback_GET_df_with_key(df, 'KEY', 'KYkw', 'BPkw')
 print('DONE with getting 6_KEY')
 print(df['key_file'].value_counts())
-df['KEY'] = df['KEY'].str.replace('_', ' ')
+df['KEY'] = df['KEY'].str.replace('_', ' ').str.replace(r'^[^a-zA-Z]+', '', regex=True)
 
 
 ####
@@ -180,12 +180,12 @@ df['KEY'] = df['KEY'].str.replace('_', ' ')
 # COMM : remixer and mix type 
 #
 df = _mixremix_0204_filename_extract_GET_df_mix_and_remixer(df)
-print('\nDONE with getting 7_mix_name & 8_remixer')
+print('DONE with getting 7_mix_name & 8_remixer')
 df[['mix_name', 'remixer']].head()
 ### if you find remix in path = remix = 'r'
 from tqdm.auto import tqdm; tqdm.pandas()
 df['remix'] = df['Path'].progress_apply(lambda x: 'R' if 'remix' in str(x).lower() else 'U')
-df
+#df
 ####
 ##
 #
@@ -199,7 +199,7 @@ df
 #
 df = _datepurch_0204_filename_extract_GET_df_with_date_purchased(df)
 print('DONE with getting 9_date_purchased')
-df[['temp_id', 'date_purchased']].head()
+#df[['temp_id', 'date_purchased']].head()
 
 ####
 ##
@@ -212,8 +212,10 @@ df[['temp_id', 'date_purchased']].head()
 # 
 # COMM --------------- >> NOW WRITE TAGS BACK ::: 7_8_ Remixer and mix name to col remixer in REKORBOX
 #
+df['remixer'] = (df['mix_name'].fillna('') + ' ' + df['remixer'].fillna('')).str.strip()
+df['remixer'] = df['remixer'].str.replace('_', ' ').str.replace(r'^[^a-zA-Z]+', '', regex=True)
 _aiff_0102_i1_GET_update_remixer_tpe4_tag(df)
-print('DONE with WRITTING 7_mix_name & 8_remixer : to remixer')
+print('DONE with WRITTING 7_mix_name & 8_remixer : to ID3TAG remixer')
 ####
 ##
 #
@@ -228,6 +230,8 @@ print('DONE with WRITTING 7_mix_name & 8_remixer : to remixer')
 #!#!#!#!#! RUNNING STATEMENTS #!#!#!#!#!
 # To run the function, simply call it on your DataFrame:
 processed_count = _write_genre_id3_bulk(df, path_col="Path", genre_col="genre")
+print('DONE with WRITTING 4_genre : to ID3TAG genre')
+
 ####
 ##
 #
@@ -245,9 +249,28 @@ processed_count = _write_genre_id3_bulk(df, path_col="Path", genre_col="genre")
 #!#!#!#!#! RUNNING STATEMENTS #!#!#!#!#!
 #To run the function, simply call:
 processed_label_count = _write_label_id3_bulk(df, path_col="Path", label_col="LABEL")
+print('DONE with WRITTING 3_LABEL : to ID3TAG LABEL')
+
 ####
 ##
 #
+
+# -----######-----######-----######-----######-----######-----######-----
+
+############## from here _fns_add
+exec(open("_fns_add.py",encoding="utf-8").read())
+# -----######-----######-----######-----######-----######-----######-----
+
+# -----######-----######-----######-----######-----######-----######-----
+# -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+# 
+# GET release date 
+#
+df = _reldate_0204_id3_filefallback_GET_df_with_rel_date(df, 'rel_date', 'RYkw_', '_PYkw')
+####
+##
+# WRITE  release date  to TAGS
+_write_reldate_id3_bulk(df, path_col='Path', reldate_col='rel_date')
 
 # -----######-----######-----######-----######-----######-----######-----
 
@@ -257,28 +280,13 @@ processed_label_count = _write_label_id3_bulk(df, path_col="Path", label_col="LA
 # -----######-----######-----######-----######-----######-----######-----
 # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 # 
-# COMM
+# KEY 
 #
-## re
+df = _key_0403_i2_GET_keys(df)
 ####
-##
+## WRITE KEY to AIFF
 #
-
-# -----######-----######-----######-----######-----######-----######-----
-
-
-# -----######-----######-----######-----######-----######-----######-----
-
-# -----######-----######-----######-----######-----######-----######-----
-# -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-# 
-# COMM
-#
-## re
-####
-##
-#
-
+df = _write_tags_2712_id3_SET_key_bulk(df, "Path", "key_dj")
 # -----######-----######-----######-----######-----######-----######-----
 
 
