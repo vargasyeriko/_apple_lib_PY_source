@@ -282,11 +282,11 @@ _write_reldate_id3_bulk(df, path_col='Path', reldate_col='rel_date')
 # 
 # KEY 
 #
-df = _key_0403_i2_GET_keys(df)
-####
-## WRITE KEY to AIFF
-#
-df = _write_tags_2712_id3_SET_key_bulk(df, "Path", "key_dj")
+# df = _key_0403_i2_GET_keys(df)
+# ####
+# ## WRITE KEY to AIFF
+# #
+# df = _write_tags_2712_id3_SET_key_bulk(df, "Path", "key_dj")
 # -----######-----######-----######-----######-----######-----######-----
 
 
