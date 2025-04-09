@@ -1,7 +1,7 @@
 exec(open("_all_fns_.py",encoding="utf-8").read())
 #
 #
-my_aiff = "/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/test"
+my_aiff = "/Users/yerik/Music/_1_NEW_SOURCE/_2025_this"
 ##
 #
 
@@ -253,14 +253,6 @@ print('DONE with WRITTING 3_LABEL : to ID3TAG LABEL')
 
 ####
 ##
-#
-
-# -----######-----######-----######-----######-----######-----######-----
-
-############## from here _fns_add
-exec(open("_fns_add.py",encoding="utf-8").read())
-# -----######-----######-----######-----######-----######-----######-----
-
 # -----######-----######-----######-----######-----######-----######-----
 # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 # 
@@ -271,22 +263,22 @@ df = _reldate_0204_id3_filefallback_GET_df_with_rel_date(df, 'rel_date', 'RYkw_'
 ##
 # WRITE  release date  to TAGS
 _write_reldate_id3_bulk(df, path_col='Path', reldate_col='rel_date')
-
-# -----######-----######-----######-----######-----######-----######-----
-
-
-# -----######-----######-----######-----######-----######-----######-----
-
-# -----######-----######-----######-----######-----######-----######-----
-# -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-# 
-# KEY 
 #
-# df = _key_0403_i2_GET_keys(df)
-# ####
-# ## WRITE KEY to AIFF
-# #
-# df = _write_tags_2712_id3_SET_key_bulk(df, "Path", "key_dj")
+#
+# -----######-----######-----######-----######-----######-----######-----
+
+############## from here _fns_add
+exec(open("_fns_key.py",encoding="utf-8").read())
+# -----######-----######-----######-----######-----######-----######-----
+
+df = _key_bulk_0815_librosa_middle_aiff_GET_output(df)
+df = _key_0403_i2_GET_keys(df) # get key_dj and key_music
+df = _write_tags_2712_id3_SET_key_bulk(df, "Path", "key_dj") # set to id3 tag
+
+
+exec(open("_fns_add.py",encoding="utf-8").read())
+df = _mix_0804_i1_GET_df_5cols(df)
+
 # -----######-----######-----######-----######-----######-----######-----
 
 
