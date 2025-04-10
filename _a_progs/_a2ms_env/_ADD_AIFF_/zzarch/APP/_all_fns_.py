@@ -1260,7 +1260,7 @@ def _write_label_id3_bulk(df, path_col='Path', label_col='LABEL'):
         file_path = row[path_col]
         label_value = row[label_col]
         
-        # Check if the file exists
+        # Check if the file e
         if not os.path.isfile(file_path):
             print(f"File not found: {file_path}")
             continue

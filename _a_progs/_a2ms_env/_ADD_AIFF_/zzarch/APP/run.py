@@ -1,7 +1,8 @@
 exec(open("_all_fns_.py",encoding="utf-8").read())
 #
 #
-my_aiff ="/Volumes/MUSIC_PROD/_1_NEW_SOURCE copy"# "/Users/yerik/Music/_1_NEW_SOURCE/_2025_this"
+#my_aiff ="/Volumes/MUSIC_PROD/_1_NEW_SOURCE copy"# 
+#my_aiff ="/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/cover"
 ##
 #
 
