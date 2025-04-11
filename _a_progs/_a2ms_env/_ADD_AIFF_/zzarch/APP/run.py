@@ -88,10 +88,12 @@ df = _cat_0204_bpm_consistency_GET_cat(df)
 # 
 # COMM ::: process METADATA : _1_title
 #
-df = df = _titile_0204_id3_filefallback_GET_df_with_titile(df, 'title', 'TRkw', 'ARkw')
+df =  _title_0204_id3_filefallback_GET_df_with_title(df, 'title', 'TRkw', 'ARkw')
 print('DONE with getting 1_title')
 print(df['title_file'].value_counts())
 ####
+### get rid of weird characters 
+df = _col_2409_txt_clean_single_GET_df(df, 'title')
 # if function need to write to IDTAGS
 ##
 _write_title_id3_bulk(df)
@@ -107,6 +109,8 @@ df = df = _artist_0204_id3_filefallback_GET_df_with_artist(df, 'artist', 'ARkw',
 print('DONE with getting 2_artist')
 print(df['artist_file'].value_counts())
 ####
+### get rid of weird characters 
+df = _col_2409_txt_clean_single_GET_df(df, 'artist')
 # if function need to write to IDTAGS
 ##
 _write_artist_id3_bulk(df)
@@ -290,7 +294,7 @@ df = _mix_0804_i1_GET_df_5cols(df) # gets jaws key up etc
 df['ID'] = ('dy' + df['bpm_consistency_cat'].str[2] 
             + df['ms_LUFS_code'].str[2].str.upper() 
             + df['id_cat_lufs'].str.lower() +'_'
-            + df['titile'].str[0].str.lower()
+            + df['title'].str[0].str.lower()
             + df['artist'].str[0].str.upper()
             + df['file_size'].astype(str).str[:2])
 
@@ -320,7 +324,7 @@ _write_comment_id3_bulk(df) # write comment to id3 tags
 ## re
 # df['re_name'] = ( df['ID'] +'_'
 #                  +'BY_'+ df['artist'].astype(str).str[:5]
-#                  +'_'+df['titile'].astype(str).str[:9]
+#                  +'_'+df['title'].astype(str).str[:9]
 #                  +'_'+ df['remix'].astype(str))
 # ####
 # ##
@@ -335,10 +339,11 @@ _write_comment_id3_bulk(df) # write comment to id3 tags
 # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 # 
 # COMM
+# Assume 'df' is your DataFrame and you have a list of column names to clean, e.g.:
+# list_of_columns = ['column1', 'column2', 'column3']
 #
-## re
-####
-##
+# To perform the cleaning, simply call:
+# cleaned_df = _col_2409_txt_clean_GET_df(df, list_of_columns)
 #
 
 # -----######-----######-----######-----######-----######-----######-----
