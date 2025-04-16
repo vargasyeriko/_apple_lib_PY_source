@@ -308,6 +308,240 @@ df.sort_values(by='ID')
 df['comment'] = df['ID'] +'_'+ df['KEY'] 
 _write_comment_id3_bulk(df) # write comment to id3 tags
 ####
+## CHECK POINT
+#
+
+# -----######-----######-----######-----######-----######-----######-----
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import random, string
+
+
+exec(open("cover_fns.py",encoding="utf-8").read())
+
+# -----######-----######-----######-----######-----######-----######-----
+
+# -----######-----######-----######-----######-----######-----######-----
+# -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+# 
+
+###### create KEY plot chamelot map 
+key_plot()
+#!#!#!#!#! RUNNING STATEMENTS #!#!#!#!#!
+# Minimal execution code: Set the directory with your PNG images and call the function.
+input_directory = direc_jpg
+output_folder = direc_jpg# Directory containing the PNG images that need processing
+
+# Call the function to process and overwrite the images in the same folder.
+_png_2409_wbrem_GET_overwrite_imgs(input_directory, tolerance=200)
+# Example: Calling the iteration function
+_aiff_2409_coveriter_GET_save(df, output_folder, default_pic=None)
+# # Example: Calling the iteration function
+_aiff_2409_coveriter_GET_save(df, output_folder, default_pic=None)
+# # Example: Calling the iteration function
+_aiff_2409_coveriter_GET_save(df, output_folder, default_pic=None) # three times to make picture small
+
+
+
+
+# create new IDs
+df['Path_jpg_album'] = f'{direc_jpg}' + 'cover_1_' + df['ID'] + '.jpg'
+df['Path_jpg_key'] = f'{direc_jpg}' + 'key_plot' + df['ID'] + '.png'
+
+###########################
+#!#!#!#!#! RUNNING STATEMENTS #!#!#!#!#!
+
+
+# Use the 'dominant_bpm' column for the text overlay:
+_img_2409_process_df_coverart_GET_output(
+    df,
+    circle_size_ratio=0.25,         # Increase the size of the circle relative to the image size
+    position="top-left",         # Change the position of the circle
+    circle_color=(0, 0, 0, 255),    # Use a red circle
+    text_color=(0, 255, 25, 255),      # Use a green color for the text
+    text_scale=0.5,                 # Adjust the text scale
+    text_column="dominant_bpm"      # Use the dominant BPM as text
+)
+
+# Example using a different column (e.g., 'artist_name'):
+# _img_2409_process_df_coverart_GET_output(
+#     df,
+#     circle_size_ratio=0.25,
+#     position="bottom-left",
+#     circle_color=(255, 0, 0, 255),
+#     text_color=(0, 255, 0, 255),
+#     text_scale=0.7,
+#     text_column="artist_name"      # Now the overlay will show the artist name
+# )
+
+
+
+#Example with no text overlay:
+_img_2409_process_df_coverart_GET_output(
+    df,
+    circle_size_ratio=0.33,
+    position="top-right",
+    circle_color=(255, 255, 255, 255),
+    text_color=(0, 255, 25, 255),
+    text_scale=0.5,
+    text_column=None               # Passing None will result in no text being drawn
+)
+
+#!#!#!#!#! RUNNING STATEMENTS #!#!#!#!#! FOR KEY overly 
+
+
+# Process each row in the DataFrame by overlaying the key image onto the album cover.
+_img_2409_overlay_df_key_GET_output(
+    df,
+    resize_factor=0.265,         # Adjust as needed to scale the overlay image
+    position_right_cm=-0.232,    # Distance from the right edge in cm
+    position_top_cm=-0.59,       # Distance from the top edge in cm
+    dpi=300                      # DPI used for conversion from cm to pixels
+)
+
+
+# Process the DataFrame: for each row, the overlay function uses the LUFS code from 'ms_LUFS_code'
+_overlay_df_circle_custom_0501_GET_image(
+    df,
+    circle_position=(-0.379, -1.2098003),  # Custom fractional position
+    circle_diameter=2755,                  # Custom circle diameter in pixels
+    ms_LUFS_column='ms_LUFS_code'           # Column from which to take the LUFS code
+)
+
+########### cliping graph 
+_audio_2409_i2_GET_generate_clipping_plots(df,save_directory="images")
+df['Path_jpg_clip'] = f'{direc_jpg}' + 'clip_plot' + df['ID'] + '.jpg'
+
+# embed freq to pic 
+_img_2409_i3_GET_embed_clipping_on_album(df)
+####
+##
+#
+
+# -----######-----######-----DYNAMIC BPM
+exec(open("cover_fns_2.py",encoding="utf-8").read())
+
+# -----######-----######-----######-----######-----######-----######-----
+# ###########################################################################
+# ########## END OF CORE FUNCTION ###########################################
+_bpm_2610_i3_GET_partialdonut_bpmdynamic(df, save_dir="images")
+df['Path_png_bar_dyn'] = f'{direc_jpg}' + 'bpm_bar_dyn_' + df['ID'] + '.png'
+#!#!#!#!#! RUNNING STATEMENTS #!#!#!#!#!
+# With your DataFrame 'df' (which contains 'ID', 'Path_png_bar_dyn', and 'Path_jpg_album'),
+# call the function to overlay the dynamic PNG onto the album JPG.
+_bpm_2610_i4_GET_embedded_album_dynamic_custom(
+    df,
+    position="top_left",  # adjust as needed: "top_left", "top_right", "bottom_left", "bottom_right", "custom"
+    x_offset=3,          # horizontal offset: increase to move right (for top_left or bottom_left) or left (for top_right or bottom_right)
+    y_offset=33,          # vertical offset: increase to move down (for top positions) or up (for bottom positions)
+    scale=.65             # adjust the scale if needed
+    # custom_coords=(x, y) can be provided if position is "custom"
+)
+
+# embed freq to pic 
+#_img_2409_i3_GET_embed_clipping_on_album(df)
+# -----######-----######-----######-----######-----######-----######-----
+# -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+# 
+# LUFS second graph 
+####
+##
+#
+
+_lufs_1504_i1_GET_partialdonut_lufs(df, save_dir="images/")
+df['Path_png_bar_lufs'] = f'{direc_jpg}' + 'lufs_bar_dyn_' + df['ID'] + '.png'
+
+_lufs_1504_i2_GET_embedded_album_lufs_custom(
+        df,
+    position="top_left",  # adjust as needed: "top_left", "top_right", "bottom_left", "bottom_right", "custom"
+    x_offset=-19,          # horizontal offset: increase to move right (for top_left or bottom_left) or left (for top_right or bottom_right)
+    y_offset=8,          # vertical offset: increase to move down (for top positions) or up (for bottom positions)
+    scale=.75             # adjust the scale if needed
+    # custom_coords=(x, y) can be provided if position is "custom"
+)
+# THIS FUNCTION CHANGES the column ms LUFS code
+
+# -----######-----######-----######-----######-----######-----######-----
+
+
+# -----######-----######-----######-----######-----######-----######-----
+
+# -----######-----######-----######-----######-----######-----######-----
+# -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+# 
+
+####TEXTURE AND SHAPE 
+##
+#
+df = _spectral_1604_sf_i1_GET_df_feats(df)
+# create plot for texture and shape
+_text_shape_1604_i1_GET_rectbar_centroidcolor(df, save_dir="images/")
+
+# EMBED 
+
+_text_shape_1604_i2_GET_embedded_album_text_shape_custom(
+    df,
+    position="bottom_left",
+    x_offset=1,
+    y_offset=417,
+    scale=3
+)
+_text_shape_1604_i2_GET_embedded_album_text_shape_custom(
+    df,
+    position="bottom_left",
+    x_offset=1,
+    y_offset=981,
+    scale=3
+)
+
+_text_shape_1604_i2_GET_embedded_album_text_shape_custom(
+    df,
+    position="bottom_left",
+    x_offset=981,
+    y_offset=630,
+    scale=5
+)
+
+
+_text_shape_1604_i2_GET_embedded_album_text_shape_custom(
+    df,
+    position="bottom_left",
+    x_offset=-2308,
+    y_offset=630,
+    scale=5
+)
+# -----######-----######-----######-----######-----######-----######-----
+df = _aiffspec_1504_i3_GET_df_spectralcolorcode(df)
+_centroid_1604_i2_GET_donutfade_centroidcolor(df, save_dir="images/")
+
+# -----######-----######-----######-----######-----######-----######-----
+
+_centroid_1604_i3_GET_embedded_album_centroid_custom(
+    df,
+    position="top_right",
+    x_offset=-28,
+    y_offset=-61,
+    scale=3
+)
+# -----######-----######-----######-----######-----######-----######-----
+# -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+# 
+#_aiff_2409_i1_GET_embed_aiff_covers(df)
+####
+##
+#
+
+# -----######-----######-----######-----######-----######-----######-----
+
+
+# -----######-----######-----######-----######-----######-----######-----
+
+# -----######-----######-----######-----######-----######-----######-----
+# -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+# 
+
+####
 ##
 #
 

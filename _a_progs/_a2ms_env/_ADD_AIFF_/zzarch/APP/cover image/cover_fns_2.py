@@ -440,7 +440,667 @@ def _lufs_1504_i2_GET_embedded_album_lufs_custom(
         print(f"TQM: Embedded LUFS donut for ID {row['ID']} at {album_path}")
 # ########## END OF CORE FUNCTION ###########################################
 
+# -------------------######-------------------######
+# 0_FNS - MAIN FUNCTION DEFINITIONS
+# -------------------######-------------------######
+
+def _spectral_1604_sf_i1_GET_df_feats(df):
+    """
+    Computes mean Spectral Bandwidth & Flatness for each audio file in df['Path'].
+
+    Then assigns a single HEX color ('HEX_shape_texture') based on:
+    - 2 Flatness levels (Tonal/Noisy)
+    - 4 Bandwidth ranges
+
+    → 8 total HEX codes (2x4 block matrix).
+
+    Returns:
+        df with:
+        - 'Spectral_Bandwidth'
+        - 'Spectral_Flatness'
+        - 'HEX_shape_texture'
+    """
+    import librosa
+    import numpy as np
+    from tqdm import tqdm
+
+    sb_list = []
+    sf_list = []
+    hex_code_list = []
+
+    for path in tqdm(df['Path'], desc="TQM: Spectral Shape-Texture Mapping"):
+        try:
+            y, sr = librosa.load(path, sr=None)
+            sb = float(np.mean(librosa.feature.spectral_bandwidth(y=y, sr=sr)))
+            sf = float(np.mean(librosa.feature.spectral_flatness(y=y)))
+
+            # Determine 8-block HEX
+            if sf < 0.25:
+                # Tonal block
+                if sb <= 600:
+                    hex_code = '#569aff'
+                elif sb <= 1800:
+                    hex_code = '#0057e7'
+                elif sb <= 3600:
+                    hex_code = '#0039a6'
+                else:
+                    hex_code = '#001a6e'
+            else:
+                # Noisy block
+                if sb <= 600:
+                    hex_code = '#FFE8CF'
+                elif sb <= 1800:
+                    hex_code = '#FFC78C'
+                elif sb <= 3600:
+                    hex_code = '#FFA64F'
+                else:
+                    hex_code = '#FF7600'
+
+        except Exception as e:
+            sb = np.nan
+            sf = np.nan
+            hex_code = '#000000'  # fallback color
+
+        sb_list.append(sb)
+        sf_list.append(sf)
+        hex_code_list.append(hex_code)
+
+    df['Spectral_Bandwidth'] = sb_list
+    df['Spectral_Flatness'] = sf_list
+    df['HEX_shape_texture'] = hex_code_list
+
+    print("✅ TQM: 3-column shape-texture classification complete.")
+    return df
+# -----######-----######-----######-----######-----######-----######-----
+# CORE FUNCTION: SHAPE
+# -----######-----######-----######-----######-----######-----######-----
+
+import os
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+from tqdm import tqdm
+
+def _text_shape_1604_i1_GET_rectbar_centroidcolor(df, save_dir="images/"):
+    """
+    SHAPE and texture
+    """
+
+    os.makedirs(save_dir, exist_ok=True)
+    if not save_dir.endswith(os.sep):
+        save_dir += os.sep
+
+    path_list = []
+
+    print("TQM: Generating SHAPE and texture...")
+
+    for _, row in tqdm(df.iterrows(), total=len(df)):
+        color = row['HEX_shape_texture']
+        img_path = f"{save_dir}text_shape_{row['ID']}.png"
+
+        fig, ax = plt.subplots(figsize=(6, 1), dpi=100)
+        ax.add_patch(Rectangle((0, 0), 1, 1, color=color))
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.axis("off")
+
+        plt.savefig(img_path, bbox_inches='tight', pad_inches=0, transparent=True)
+        plt.close(fig)
+
+        path_list.append(img_path)
+
+    df['Path_png_bar_text'] = path_list
+    print("TQM: SHAPE and texture Spectral_Bandwidth	Spectral_Flatness images saved successfully!")
+
+# -----######-----######-----######-----######-----######-----######-----
+# CORE FUNCTION: APPEND text and shape
+# -----######-----######-----######-----######-----######-----######-----
+
+import os
+from PIL import Image
+import pandas as pd
+
+def _text_shape_1604_i2_GET_embedded_album_text_shape_custom(
+    df,
+    position="top_left",
+    x_offset=10,
+    y_offset=10,
+    scale=1.0,
+    custom_coords=None
+):
+    """
+    Embeds cSHAPE
+    """
+    for _, row in df.iterrows():
+        album_path = row['Path_jpg_album']
+        overlay_path = row['Path_png_bar_text']
+
+        try:
+            album_img = Image.open(album_path).convert("RGBA")
+            overlay_img = Image.open(overlay_path).convert("RGBA")
+        except Exception as e:
+            print(f"Error loading for ID {row['ID']}: {e}")
+            continue
+
+        if scale != 1.0:
+            new_size = (int(overlay_img.width * scale), int(overlay_img.height * scale))
+            overlay_img = overlay_img.resize(new_size, Image.ANTIALIAS)
+
+        # Position calculation
+        if position == "top_left":
+            x, y = x_offset, y_offset
+        elif position == "top_right":
+            x = album_img.width - overlay_img.width - x_offset
+            y = y_offset
+        elif position == "bottom_left":
+            x = x_offset
+            y = album_img.height - overlay_img.height - y_offset
+        elif position == "bottom_right":
+            x = album_img.width - overlay_img.width - x_offset
+            y = album_img.height - overlay_img.height - y_offset
+        elif position == "custom":
+            if not custom_coords:
+                raise ValueError("Must provide custom_coords when position is 'custom'")
+            x, y = custom_coords
+        else:
+            raise ValueError(f"Invalid position: {position}")
+
+        album_img.paste(overlay_img, (x, y), overlay_img)
+        album_img.convert("RGB").save(album_path, "JPEG")
+        print(f"TQM: Embedded SHAPE bar for ID {row['ID']} at {album_path}")
+
+######################## CENTROID
+
+# -----######-----######-----######-----######-----######-----######-----
+# FUNCTION: _aiffspec_1504_i3_GET_df_spectralcolorcode
+# -----######-----######-----######-----######-----######-----######-----
+
+import numpy as np
+import pandas as pd
+import librosa
+from tqdm import tqdm
+from mutagen.aiff import AIFF
+
+# Color interval mapping defined externally
+spectral_centroid_intervals_1504 = [
+    (0, 250, '#000000', 'Dead silence / sub-rumble'),
+    (250, 500, '#01021B', 'Ultra-deep ambience'),
+    (500, 750, '#061539', 'Submerged, thick textures'),
+    (750, 1000, '#093746', 'Hollow & ghostly'),
+    (1000, 1250, '#2D2D2D', 'Industrial minimal'),
+    (1250, 1500, '#4C0013', 'Dramatic & haunting'),
+    (1500, 1750, '#7A1E23', 'Raw, gritty tension'),
+    (1750, 2000, '#800000', 'Intense, emotional'),
+    (2000, 2250, '#4B0082', 'Heavy melancholy'),
+    (2250, 2500, '#5C2A9D', 'Creeping psychedelia'),
+    (2500, 2750, '#3C3B6E', 'Dubby twilight'),
+    (2750, 3000, '#014421', 'Jungle, tribal pulse'),
+    (3000, 3250, '#556B2F', 'Organic, earthy'),
+    (3250, 3500, '#808000', 'Tense, decaying'),
+    (3500, 3750, '#CD7F32', 'Ancient, dirty glow'),
+    (3750, 4000, '#CC7722', 'Muted emotion'),
+    (4000, 4250, '#FF7034', 'Heated drama'),
+    (4250, 4500, '#FFD700', 'Emotional climax'),
+    (4500, 4750, '#FFA500', 'Assertive, bright'),
+    (4750, 5000, '#F08080', 'Emotional but soft'),
+    (5000, 5250, '#FFE5B4', 'Airy textures'),
+    (5250, 5500, '#FFFF99', 'Dreamy & bright'),
+    (5500, 5750, '#FFFF33', 'Sparkling energy'),
+    (5750, float('inf'), '#FFFFFF', 'Harsh, clinical, hyper-bright')
+]
+
+def _aiffspec_1504_i3_GET_df_spectralcolorcode(df):
+    """
+    Adds spectral centroid, mapped color, and description to df using AIFF audio files in df['Path'].
+
+    Returns:
+        df (DataFrame): Same DataFrame with added columns:
+            - 'spec_centroid_hz'
+            - 'centroid_color'
+            - 'centroid_desc'
+    """
+    centroids = []
+    colors = []
+    descs = []
+
+    for path in tqdm(df['Path'], desc="TQM: Extracting spectral centroid"):
+        try:
+            y, sr = librosa.load(path, sr=None, mono=True)
+            centroid_hz = np.mean(librosa.feature.spectral_centroid(y=y, sr=sr))
+
+            # Match to interval
+            for low, high, hex_code, text in spectral_centroid_intervals_1504:
+                if low <= centroid_hz < high:
+                    centroids.append(centroid_hz)
+                    colors.append(hex_code)
+                    descs.append(text)
+                    break
+        except Exception as e:
+            centroids.append(None)
+            colors.append(None)
+            descs.append(None)
+            print(f"Error in {path}: {e}")
+
+    df['spec_centroid_hz'] = centroids
+    df['centroid_color'] = colors
+    df['centroid_desc'] = descs
+    return df
+
+# -----######-----######-----######-----######-----######-----######-----
+# CORE FUNCTION: _centroid_1604_i2_GET_donutfade_centroidcolor
+# -----######-----######-----######-----######-----######-----######-----
+
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import to_rgba
+from matplotlib.patches import Wedge
+from tqdm import tqdm
+
+def _centroid_1604_i2_GET_donutfade_centroidcolor(df, save_dir="images_centroid/"):
+    """
+    Creates a thin donut image with radial fade from center using 'centroid_color'.
+    Saves transparent PNGs named 'centroid_donut_{ID}.png' for each row.
+
+    Parameters:
+        df (pd.DataFrame): Requires 'centroid_color' and 'ID' columns.
+        save_dir (str): Folder to save images (default: 'images_centroid/')
+    
+    Returns:
+        Adds new column: 'Path_png_bar_centroid' with saved PNG file paths.
+    """
+
+    os.makedirs(save_dir, exist_ok=True)
+    if not save_dir.endswith(os.sep):
+        save_dir += os.sep
+
+    path_list = []
+    print("TQM: Generating centroid color donuts...")
+
+    for _, row in tqdm(df.iterrows(), total=len(df)):
+        color = row['centroid_color']
+        img_path = f"{save_dir}centroid_donut_{row['ID']}.png"
+
+        size = 512
+        radius_outer = size // 2
+        radius_inner = int(radius_outer * 0.65)  # makes the donut skinny
+        fade_steps = 100
+
+        # Base image with alpha channel
+        img = np.zeros((size, size, 4))
+
+        cx, cy = radius_outer, radius_outer
+        rgba = np.array(to_rgba(color))
+
+        for r in range(radius_inner, radius_outer):
+            alpha = 1.0 - (r - radius_inner) / (radius_outer - radius_inner)
+            y, x = np.ogrid[:size, :size]
+            mask = ((x - cx)**2 + (y - cy)**2 >= r**2) & ((x - cx)**2 + (y - cy)**2 < (r+1)**2)
+            for c in range(3):
+                img[..., c][mask] = rgba[c]
+            img[..., 3][mask] = rgba[3] * alpha
+
+        plt.figure(figsize=(2, 2), dpi=100)
+        plt.axis('off')
+        plt.imshow(img)
+        plt.savefig(img_path, bbox_inches='tight', pad_inches=0, transparent=True)
+        plt.close()
+
+        path_list.append(img_path)
+
+    df['Path_png_bar_centroid'] = path_list
+    print("TQM: Donut-fade images saved successfully!")
 
 
+# -----######-----######-----######-----######-----######-----######-----
+# CORE FUNCTION: _centroid_1604_i3_GET_embedded_album_centroid_custom
+# -----######-----######-----######-----######-----######-----######-----
 
+import os
+from PIL import Image
+import pandas as pd
+
+def _centroid_1604_i3_GET_embedded_album_centroid_custom(
+    df,
+    position="top_left",
+    x_offset=10,
+    y_offset=10,
+    scale=1.0,
+    custom_coords=None
+):
+    """
+    Embeds centroid donut PNGs over album cover JPEGs using RGBA transparency.
+    Overwrites 'Path_jpg_album' in-place.
+
+    Parameters:
+        df (pd.DataFrame): Must contain 'Path_jpg_album', 'Path_png_bar_centroid', and 'ID'
+        position (str): 'top_left', 'top_right', 'bottom_left', 'bottom_right', or 'custom'
+        x_offset (int): Pixels from the horizontal edge
+        y_offset (int): Pixels from the vertical edge
+        scale (float): Resize overlay image before embedding
+        custom_coords (tuple): (x, y) position for manual placement if 'custom' is chosen
+    """
+
+    for _, row in df.iterrows():
+        album_path = row['Path_jpg_album']
+        overlay_path = row['Path_png_bar_centroid']
+
+        try:
+            album_img = Image.open(album_path).convert("RGBA")
+            overlay_img = Image.open(overlay_path).convert("RGBA")
+        except Exception as e:
+            print(f"❌ Error for ID {row['ID']}: {e}")
+            continue
+
+        if scale != 1.0:
+            new_size = (int(overlay_img.width * scale), int(overlay_img.height * scale))
+            overlay_img = overlay_img.resize(new_size, Image.ANTIALIAS)
+
+        # Placement logic
+        if position == "top_left":
+            x, y = x_offset, y_offset
+        elif position == "top_right":
+            x = album_img.width - overlay_img.width - x_offset
+            y = y_offset
+        elif position == "bottom_left":
+            x = x_offset
+            y = album_img.height - overlay_img.height - y_offset
+        elif position == "bottom_right":
+            x = album_img.width - overlay_img.width - x_offset
+            y = album_img.height - overlay_img.height - y_offset
+        elif position == "custom":
+            if not custom_coords:
+                raise ValueError("Custom coordinates must be provided for 'custom' position.")
+            x, y = custom_coords
+        else:
+            raise ValueError(f"Invalid position: {position}")
+
+        album_img.paste(overlay_img, (x, y), overlay_img)
+        album_img.convert("RGB").save(album_path, "JPEG")
+        print(f"✅ TQM: Embedded CENTROID donut for ID {row['ID']} at {album_path}")
+
+####### bar plot heatmap DR freq
+
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+def plot_dbs_heatmap_split_bars(df, save_path=None):
+    """
+    Plots a heatmap of dB levels with split bars for individual bands and the overall song.
+    Optionally saves the plot if `save_path` is provided.
+    Returns the figure object.
+    """
+    bands = df['Band'][:-1].tolist()
+    overall_stats = df.iloc[-1]
+    
+    colors = [
+        'blue', 'cyan', 'lightblue', 'green', 'lightgreen', 
+        'lime', 'red', 'orange', 'yellow'
+    ]
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5, 8), gridspec_kw={'height_ratios': [2, 1], 'hspace': 0.15})
+    bar_width = 0.98
+
+    # ----- Upper Plot -----
+    for i, (_, row) in enumerate(df[:-1].iterrows()):
+        min_dB = row['Min dB']
+        max_dB = row['Max dB']
+        mean_dB = row['Mean dB']
+
+        ax1.fill_betweenx([0, 1], i - bar_width / 2, i + bar_width / 2, color=colors[i % len(colors)], edgecolor='black', linewidth=0.8)
+        ax1.hlines((mean_dB + 100) / 110, i - bar_width / 2, i + bar_width / 2, color='black', linewidth=1.2)
+        ax1.scatter(i, (min_dB + 100) / 110, color='white', edgecolor='black', zorder=5)
+        ax1.scatter(i, (max_dB + 100) / 110, color='black', zorder=5)
+        ax1.scatter(i, (mean_dB + 100) / 110, color='blue', zorder=5)
+
+    overall_index = len(bands)
+    ax1.fill_betweenx([0, 1], overall_index - bar_width / 2, overall_index + bar_width / 2, color='#00796B', edgecolor='black', linewidth=0.8)
+    ax1.hlines((overall_stats['Mean dB'] + 100) / 110, overall_index - bar_width / 2, overall_index + bar_width / 2, color='black', linewidth=2)
+    ax1.hlines((overall_stats['Min dB'] + 100) / 110, overall_index - bar_width / 2, overall_index + bar_width / 2, color='black', linestyle='--', linewidth=2)
+    ax1.hlines((overall_stats['Max dB'] + 100) / 110, overall_index - bar_width / 2, overall_index + bar_width / 2, color='black', linestyle='-.', linewidth=2)
+
+    ax1.set_xticks(range(len(bands) + 1))
+    ax1.set_xticklabels([''] * (len(bands) + 1))
+    ax1.set_xlim(-0.5, len(bands) + 0.5)
+    ax1.set_ylim(0, 1)
+    ax1.set_yticks(np.linspace(0, 1, 12))
+    ax1.set_yticklabels(np.linspace(-100, 10, 12).astype(int))
+    ax1.set_title("Frequency Band dB Levels", fontsize=14)
+    for spine in ['top', 'right', 'left']:
+        ax1.spines[spine].set_visible(False)
+
+    # ----- Lower Plot -----
+    offset = 0.2
+    ax2.bar(np.arange(len(bands)) - offset, df['Time-Domain_DR'][:-1], color='skyblue', edgecolor='black', width=bar_width / 2, label='Time-Domain')
+    ax2.bar(len(bands) - offset, df['Time-Domain_DR'].iloc[-1], color='#00796B', edgecolor='black', width=bar_width / 2)
+    ax2.bar(np.arange(len(bands)) + offset, df['Frequency-Domain_DR'][:-1], color='lightgreen', edgecolor='black', width=bar_width / 2, label='Frequency-Domain')
+    ax2.bar(len(bands) + offset, df['Frequency-Domain_DR'].iloc[-1], color='#00796B', edgecolor='black', width=bar_width / 2)
+
+    ax2.set_xticks(range(len(bands) + 1))
+    ax2.set_xticklabels([''] * (len(bands) + 1))
+    ax2.set_xlim(-0.5, len(bands) + 0.5)
+    ax2.set_ylim(0, 40)
+    ax2.set_yticks(np.linspace(0, 30, 6))
+    ax2.set_ylabel('Dynamic Range (dB)', fontsize=10)
+    ax2.set_title("Time-Domain and Frequency-Domain DR", fontsize=12)
+
+    ax2_rms = ax2.twinx()
+    ax2_rms.set_ylim(0, 100)
+    ax2_rms.set_ylabel('RMS', fontsize=10, color='darkorange')
+    ax2_rms.tick_params(axis='y', labelcolor='darkorange', direction='out', pad=5)
+    ax2_rms.plot(np.arange(len(bands)), df['RMS'][:-1], color='darkorange', linewidth=2, marker='o', label='RMS')
+    ax2_rms.plot(len(bands), df['RMS'].iloc[-1], color='darkorange', linewidth=2, marker='o')
+
+    ax2.legend(loc='upper left')
+    ax2_rms.legend(loc='upper right')
+
+    for i, color in enumerate(colors):
+        ax2.plot(i, -2, marker='o', markersize=10, color=color, clip_on=False)
+    ax2.plot(len(bands), -2, marker='o', markersize=10, color='#00796B', clip_on=False)
+
+    fig.subplots_adjust(top=0.95, bottom=0.05, left=0.1, right=0.9, hspace=0.25)
+
+    # ----- Save If Needed -----
+    if save_path:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        fig.savefig(save_path, bbox_inches='tight', dpi=300)
+        print(f"TQM: Plot saved to {save_path}")
+    else:
+        print("TQM: Plot created (not saved).")
+
+    return fig
+
+# -----######-----######-----######-----######-----######-----#
+# 0_FNS: _plot_1604_batch_GET_save_png_dbs
+# -----######-----######-----######-----######-----######-----#
+import os
+import pandas as pd
+
+def _plot_1604_batch_GET_save_png_dbs(df, output_dir):
+    """
+    For each row in df, loads the 'Path_csv_freq' as a DataFrame, 
+    generates the dB/DR heatmap, and saves it as PNG to output_dir.
+
+    Parameters:
+        df (pd.DataFrame): Must include 'Path_csv_freq' and 'ID'
+        output_dir (str): Folder where plots will be saved
+    """
+    from matplotlib import pyplot as plt
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    for idx, row in df.iterrows():
+        path_csv = row['Path_csv_freq']
+        track_id = row['ID']
+        save_path = os.path.join(output_dir, f'dbs_plot_{track_id}.png')
+
+        try:
+            df_freq = pd.read_csv(path_csv)
+            fig = plot_dbs_heatmap_split_bars(df_freq, save_path=save_path)
+            plt.close(fig)
+            print(f"✅ Saved: {save_path}")
+        except Exception as e:
+            print(f"❌ Error processing {path_csv}: {e}")
+
+
+# -----######-----######-----######-----######-----######-----######-----
+# CORE FUNCTION: _dr_1604_i2_GET_embedded_album_dr_custom
+# -----######-----######-----######-----######-----######-----######-----
+import os
+from PIL import Image
+import pandas as pd
+
+def _dr_1604_i2_GET_embedded_album_dr_custom(
+    df,
+    flip_deg=180,           # Rotate 180° by default
+    scale=1.0,              # 1.0 = original size
+    x_offset=0,             # Fine-tune position (horizontal)
+    y_offset=0,             # Fine-tune position (vertical)
+    position="center",      # Now supports: center + top_left/top_right/bottom_left/bottom_right/custom
+    custom_coords=None      # Only used if position == "custom"
+):
+    """
+    Embeds each DR PNG (flipped, scaled, centered) over its matching album cover.
+
+    Parameters:
+        df (pd.DataFrame): Requires 'Path_png_dr', 'Path_jpg_album'
+        flip_deg (int): Degrees to rotate DR overlay
+        scale (float): Scale factor for DR overlay
+        x_offset, y_offset (int): Positional fine-tuning
+        position (str): One of ['center', 'top_left', 'top_right', 'bottom_left', 'bottom_right', 'custom']
+        custom_coords (tuple): Exact (x, y) if position == "custom"
+    """
+    for idx, row in df.iterrows():
+        try:
+            # Load both images
+            base_img = Image.open(row['Path_jpg_album']).convert("RGBA")
+            overlay = Image.open(row['Path_png_dr']).convert("RGBA")
+
+            # Rotate and scale
+            overlay = overlay.rotate(flip_deg, expand=True)
+            new_size = (int(overlay.width * scale), int(overlay.height * scale))
+            overlay = overlay.resize(new_size, Image.ANTIALIAS)
+
+            # Get base and overlay sizes
+            bx, by = base_img.size
+            ox, oy = overlay.size
+
+            # Calculate position
+            if position == "custom" and custom_coords:
+                pos = custom_coords
+            elif position == "center":
+                pos = ((bx - ox) // 2 + x_offset, (by - oy) // 2 + y_offset)
+            else:
+                pos_dict = {
+                    "top_left": (x_offset, y_offset),
+                    "top_right": (bx - ox - x_offset, y_offset),
+                    "bottom_left": (x_offset, by - oy - y_offset),
+                    "bottom_right": (bx - ox - x_offset, by - oy - y_offset)
+                }
+                pos = pos_dict.get(position, (x_offset, y_offset))
+
+            # Composite and save
+            base_img.paste(overlay, pos, overlay)
+            base_img.convert("RGB").save(row['Path_jpg_album'])
+
+        except Exception as e:
+            print(f"❌ Error embedding DR PNG for row {idx}: {e}")
+
+########################## ID and KEY make plot then embed 
+
+# -----######-----######-----######-----######-----######-----#
+# 0_FNS: _keyid_1604_i3_GET_png_label_blocks_rightflush
+# -----######-----######-----######-----######-----######-----#
+
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def _keyid_1604_i3_GET_png_label_blocks_rightflush(df, save_dir='img_keyid'):
+    """
+    For each row (ID, KEY), create a 2-block image:
+      - TOP block: white bg, right-aligned KEY inside block
+      - BOTTOM block: washed white, right-aligned ID inside block
+
+    Exports as: key_and_id_{ID}.png into save_dir
+    """
+    os.makedirs(save_dir, exist_ok=True)
+
+    for _, row in df.iterrows():
+        ID = row['ID']
+        KEY = row['KEY']
+        fname = f"key_and_id_{ID}.png"
+        out_path = os.path.join(save_dir, fname)
+
+        fig, ax = plt.subplots(figsize=(4, 4))
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.axis('off')
+
+        # Background blocks
+        ax.fill_between([0, 1], 0.5, 1, color='white')      # Top half
+        ax.fill_between([0, 1], 0.0, 0.5, color='#f2f2f2')   # Bottom half
+
+        # Texts - aligned inside their rectangles (flush right, no margin)
+        ax.text(
+            0.98, 0.75, str(KEY),
+            fontsize=58, fontweight='bold',
+            ha='right', va='center', color='black'
+        )
+        ax.text(
+            0.98, 0.25, str(ID),
+            fontsize=31, fontweight='bold',
+            ha='right', va='center', color='black'
+        )
+
+        plt.savefig(out_path, bbox_inches='tight', dpi=150)
+        plt.close()
+
+# -----######-----######-----######-----######-----######-----######-----
+# CORE FUNCTION: _idkey_1604_i1_GET_embedded_album_idkey_right
+# -----######-----######-----######-----######-----######-----######-----
+import os
+from PIL import Image
+import pandas as pd
+
+def _idkey_1604_i1_GET_embedded_album_idkey_right(
+    df,
+    flip_deg=0,             # Rotate ID+KEY PNG if needed
+    scale=1.0,              # Scale factor
+    x_offset=0,             # How far from the right edge
+    y_offset=0              # Fine-tune vertical alignment
+):
+    """
+    Embeds ID+KEY PNG on the right center of each album JPG, optionally flipped and scaled.
+
+    Parameters:
+        df (pd.DataFrame): Requires 'Path_png_id_and_key', 'Path_jpg_album'
+        flip_deg (int): Degrees to rotate the overlay
+        scale (float): Scale factor for overlay image
+        x_offset (int): Shift left from right edge
+        y_offset (int): Shift up/down from vertical center
+    """
+    for idx, row in df.iterrows():
+        try:
+            base_img = Image.open(row['Path_jpg_album']).convert("RGBA")
+            overlay = Image.open(row['Path_png_id_and_key']).convert("RGBA")
+
+            # Flip/rotate + scale
+            overlay = overlay.rotate(flip_deg, expand=True)
+            new_size = (int(overlay.width * scale), int(overlay.height * scale))
+            overlay = overlay.resize(new_size, Image.ANTIALIAS)
+
+            bx, by = base_img.size
+            ox, oy = overlay.size
+
+            # Position: Centered vertically, right aligned
+            pos_x = bx - ox - x_offset
+            pos_y = (by - oy) // 2 + y_offset
+            position = (pos_x, pos_y)
+
+            base_img.paste(overlay, position, overlay)
+            base_img.convert("RGB").save(row['Path_jpg_album'])
+
+        except Exception as e:
+            print(f"❌ Error embedding ID+KEY PNG for row {idx}: {e}")
 
