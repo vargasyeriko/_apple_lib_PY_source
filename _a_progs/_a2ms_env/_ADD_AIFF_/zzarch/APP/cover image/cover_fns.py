@@ -321,49 +321,100 @@ def extract_aiff_cover(file_path, pic=None):
 # then renames the output cover image to the pattern "cover_1_{id}.jpg" and writes it into the output folder.
 
 import os
+# 0_FNS
+import os
+import glob
+import pandas as pd
 
-def _aiff_2409_coveriter_GET_save(df, output_folder: str, default_pic: str = None) -> None:
+# ###########################################################################
+# ########## CORE FUNCTION: _aiff_2409_coveriter_GET_save ###################
+# ###########################################################################
+# 0_FNS
+import os
+import shutil
+import pandas as pd
+
+# ###########################################################################
+# ########## CORE FUNCTION: _aiff_2409_coveriter_GET_save ###################
+# ###########################################################################
+def _aiff_2409_coveriter_GET_save(df, direc_jpg: str, default_pic: str = None) -> None:
     """
-    Iterates through a DataFrame of AIFF file paths and IDs, applies extract_aiff_cover,
-    and renames the generated cover image to "cover_1_{id}.jpg" saved in the output folder.
-    
+    Extracts and saves AIFF cover as 'cover_1_{ID}.jpg' in direc_jpg.
+    Overwrites existing covers. Compatible across volumes (no cross-device errors).
+
     Parameters:
-        df (pandas.DataFrame): A DataFrame with at least two columns:
-            - "Path": containing the file path for an AIFF file.
-            - "ID": a unique identifier used in output file naming.
-        output_folder (str): Directory where the renamed cover images will be saved.
-        default_pic (str): Optional file path for the default cover image if the AIFF file has no cover.
-        
-    Returns:
-        None: The function processes each file, renames the generated cover image, and prints TQM messages.
+        df (pd.DataFrame): Must contain 'Path' and 'ID' columns
+        direc_jpg (str): Folder to store final output cover images
+        default_pic (str): Optional fallback if no embedded cover
     """
-    # Ensure output folder exists
-    os.makedirs(output_folder, exist_ok=True)
-    
-    # Iterate over each row in the DataFrame
-    for idx, row in df.iterrows():
+    os.makedirs(direc_jpg, exist_ok=True)
+
+    for _, row in df.iterrows():
         file_path = row["Path"]
         id_val = row["ID"]
-        
-        # Call the provided extract_aiff_cover function (DO NOT modify this function)
+
+        temp_cover = os.path.splitext(file_path)[0] + ".jpg"  # Where your tool currently saves
+        final_cover = os.path.join(direc_jpg, f"cover_1_{id_val}.jpg")
+
+        # Make sure the temp cover doesn't already exist
+        if os.path.exists(final_cover):
+            os.remove(final_cover)
+
+        # Extract (you don't control where it saves, so we pick it up after)
         result = extract_aiff_cover(file_path, pic=default_pic)
-        
-        if result:
-            # The provided function writes output as base_name.jpg in the same folder as the AIFF file.
-            base_name = os.path.splitext(file_path)[0]
-            default_cover = f"{base_name}.jpg"
-            
-            # Construct the new cover image path with the naming convention "cover_1_{id}.jpg"
-            new_cover_name = os.path.join(output_folder, f"cover_1_{id_val}.jpg")
-            
+
+        if result and os.path.exists(temp_cover):
             try:
-                # Rename (or move) the default cover image file to the new cover image path
-                os.rename(default_cover, new_cover_name)
-                print(f"TQM: Cover image for ID {id_val} saved as {new_cover_name}")
+                shutil.move(temp_cover, final_cover)  # Cross-device safe move
+                print(f"TQM ✅ Cover saved: {final_cover}")
             except Exception as e:
-                print(f"Error renaming cover image for file {file_path}: {e}")
+                print(f"❌ ERROR moving cover: {e}")
         else:
-            print(f"TQM: Failed to process cover for file {file_path}")
+            print(f"❌ TQM: Cover not found or extract failed for {file_path}")
+
+
+# def _aiff_2409_coveriter_GET_save(df, output_folder: str, default_pic: str = None) -> None:
+#     """
+#     Iterates through a DataFrame of AIFF file paths and IDs, applies extract_aiff_cover,
+#     and renames the generated cover image to "cover_1_{id}.jpg" saved in the output folder.
+    
+#     Parameters:
+#         df (pandas.DataFrame): A DataFrame with at least two columns:
+#             - "Path": containing the file path for an AIFF file.
+#             - "ID": a unique identifier used in output file naming.
+#         output_folder (str): Directory where the renamed cover images will be saved.
+#         default_pic (str): Optional file path for the default cover image if the AIFF file has no cover.
+        
+#     Returns:
+#         None: The function processes each file, renames the generated cover image, and prints TQM messages.
+#     """
+#     # Ensure output folder exists
+#     os.makedirs(output_folder, exist_ok=True)
+    
+#     # Iterate over each row in the DataFrame
+#     for idx, row in df.iterrows():
+#         file_path = row["Path"]
+#         id_val = row["ID"]
+        
+#         # Call the provided extract_aiff_cover function (DO NOT modify this function)
+#         result = extract_aiff_cover(file_path, pic=default_pic)
+        
+#         if result:
+#             # The provided function writes output as base_name.jpg in the same folder as the AIFF file.
+#             base_name = os.path.splitext(file_path)[0]
+#             default_cover = f"{base_name}.jpg"
+            
+#             # Construct the new cover image path with the naming convention "cover_1_{id}.jpg"
+#             new_cover_name =f"{output_folder}/cover_1_{id_val}.jpg"
+            
+#             try:
+#                 # Rename (or move) the default cover image file to the new cover image path
+#                 os.rename(default_cover, new_cover_name)
+#                 print(f"TQM: Cover image for ID {id_val} saved as {new_cover_name}")
+#             except Exception as e:
+#                 print(f"Error renaming cover image for file {file_path}: {e}")
+#         else:
+#             print(f"TQM: Failed to process cover for file {file_path}")
 
 # -----######-----######-----######-----######-----######-----######-----
 

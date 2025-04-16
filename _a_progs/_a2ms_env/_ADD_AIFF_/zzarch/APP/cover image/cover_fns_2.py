@@ -205,14 +205,13 @@ from tqdm import tqdm
 
 # LUFS Color Map (A = darkest, F = brightest)
 lufs_color_map = {
-    'LuA': '#ff89a1',  # Softest white
-    'LuB': '#ff6685',  # Whisper frost
-    'LuC': '#ff4269',  # Powder ice
-    'LuD': '#ff1e4c',  # Gentle sky
-    'LuE': '#f90033',  # Baby blue mist
-    'LuF': '#d6002c',  # Blue snow
+    'LuA': '#f90033',  # Light pink red
+    'LuB': '#f90033',  # Soft cherry
+    'LuC': '#f90033',  # Vibrant rose
+    'LuD': '#f90033',  # Deep raspberry
+    'LuE': '#f90033',  # Scarlet red
+    'LuF': '#f90033',  # Crimson red
 }
-
 
 def _all_values_CREATE_12_LUFS_categories(lufs_value):
     if lufs_value is None:
@@ -275,7 +274,7 @@ def _lufs_1504_i1_GET_partialdonut_lufs(df, save_dir="images_lufs"):
 
         # Color category from LUFS value
         lufs_cat = _all_values_CREATE_12_LUFS_categories(val)
-        donut_color = lufs_color_map.get(lufs_cat, "#AAAAAA")
+        donut_color = lufs_color_map.get(lufs_cat, "#f90033")
 
         # Donut segments
         segments = [norm_val, 100 - norm_val]
