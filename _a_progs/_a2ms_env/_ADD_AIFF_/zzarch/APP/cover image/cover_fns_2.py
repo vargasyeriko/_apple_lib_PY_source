@@ -1104,3 +1104,113 @@ def _idkey_1604_i1_GET_embedded_album_idkey_right(
         except Exception as e:
             print(f"❌ Error embedding ID+KEY PNG for row {idx}: {e}")
 
+# -----######-----######-----######-----######-----######-----#
+# CORE FUNCTION: _freq_1604_i1_GET_tables_dynamic_range_stats
+# -----######-----######-----######-----######-----######-----#
+
+import os
+import numpy as np
+import pandas as pd
+import librosa
+from scipy.signal import butter, filtfilt
+from tqdm import tqdm
+
+def _freq_1604_i1_GET_tables_dynamic_range_stats(
+    df,
+    output_dir,
+    path_col='Path',
+    id_col='ID'
+):
+    """
+    For each audio file in df, computes dynamic range stats across 9 frequency bands (freq & time domain),
+    and saves results as `table_freq_{ID}.csv` in the specified directory.
+
+    Parameters:
+        df (pd.DataFrame): Must include audio file paths and IDs.
+        output_dir (str): Destination to save CSVs.
+        path_col (str): Column name for audio paths.
+        id_col (str): Column name for unique IDs.
+    """
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    bands = {
+        "Low-Low": (20, 60),
+        "Low-Mid": (60, 120),
+        "Low-High": (120, 200),
+        "Mid-Low": (200, 500),
+        "Mid-Mid": (500, 1000),
+        "Mid-High": (1000, 2000),
+        "High-Low": (2000, 5000),
+        "High-Mid": (5000, 10000),
+        "High-High": (10000, 22050)  # fallback limit, to be updated per file
+    }
+
+    def bandpass_filter(y, sr, lowcut, highcut):
+        nyquist = 0.5 * sr
+        low = lowcut / nyquist
+        high = highcut / nyquist
+        if low <= 0 or high >= 1:
+            return np.zeros_like(y)  # return silence if invalid
+        b, a = butter(2, [low, high], btype="band")
+        return filtfilt(b, a, y)
+
+    for idx, row in tqdm(df.iterrows(), total=len(df), desc="TQM Processing"):
+        path = row[path_col]
+        ID = row[id_col]
+        try:
+            y, sr = librosa.load(path, sr=None)
+            bands['High-High'] = (10000, sr * 0.49)
+            S = np.abs(librosa.stft(y, n_fft=2048, hop_length=1024))
+            S_db = librosa.amplitude_to_db(S, ref=np.max)
+            freqs = librosa.fft_frequencies(sr=sr, n_fft=S.shape[0])
+
+            mean_dbs, max_dbs, min_dbs = {}, {}, {}
+            rms_values = {}
+            freq_domain_dynamics = {}
+            time_domain_dynamics = {}
+
+            for band_name, (low, high) in bands.items():
+                band_idx = np.where((freqs >= low) & (freqs <= high))[0]
+                band_dbs = S_db[band_idx, :]
+                band_amps = S[band_idx, :]
+
+                mean_dbs[band_name] = np.mean(band_dbs)
+                max_dbs[band_name] = np.max(band_dbs)
+                min_dbs[band_name] = np.min(band_dbs)
+
+                rms = np.sqrt(np.mean(band_amps**2))
+                peak = np.max(band_amps)
+                freq_domain_dynamics[band_name] = 20 * np.log10(peak / rms) if rms > 0 else 0
+                rms_values[band_name] = rms
+
+                y_filt = bandpass_filter(y, sr, low, high)
+                rms_t = np.sqrt(np.mean(y_filt**2))
+                peak_t = np.max(np.abs(y_filt))
+                time_domain_dynamics[band_name] = 20 * np.log10(peak_t / rms_t) if rms_t > 0 else 0
+
+            overall_mean = np.mean(S_db)
+            overall_max = np.max(S_db)
+            overall_min = np.min(S_db)
+            overall_rms = np.sqrt(np.mean(S**2))
+            overall_peak = np.max(S)
+            freq_dr_overall = 20 * np.log10(overall_peak / overall_rms) if overall_rms > 0 else 0
+
+            rms_y = np.sqrt(np.mean(y**2))
+            peak_y = np.max(np.abs(y))
+            time_dr_overall = 20 * np.log10(peak_y / rms_y) if rms_y > 0 else 0
+
+            df_out = pd.DataFrame({
+                'Band': list(bands.keys()) + ['Overall Song'],
+                'Mean dB': list(mean_dbs.values()) + [overall_mean],
+                'Max dB': list(max_dbs.values()) + [overall_max],
+                'Min dB': list(min_dbs.values()) + [overall_min],
+                'RMS': list(rms_values.values()) + [overall_rms],
+                'Frequency-Domain_DR': list(freq_domain_dynamics.values()) + [freq_dr_overall],
+                'Time-Domain_DR': list(time_domain_dynamics.values()) + [time_dr_overall]
+            })
+
+            df_out.to_csv(os.path.join(output_dir, f"table_freq_{ID}.csv"), index=False)
+        except Exception as e:
+            print(f"❌ ERROR on {ID} | {path} ::: {e}")
+

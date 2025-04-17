@@ -531,7 +531,12 @@ _centroid_1604_i3_GET_embedded_album_centroid_custom(
 ####
 ##
 #
-
+# Example: compute and save to folder
+_freq_1604_i1_GET_tables_dynamic_range_stats(
+    df,
+    output_dir=direc_tables
+)
+df['Path_csv_freq'] = f'{direc_tables}' + 'table_freq_' + df['ID'] + '.csv'
 # -----######-----######-----######-----######-----######-----######-----
 
 
@@ -540,15 +545,50 @@ _centroid_1604_i3_GET_embedded_album_centroid_custom(
 # -----######-----######-----######-----######-----######-----######-----
 # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 # 
+exec(open("cover_fns_2.py",encoding="utf-8").read())
 
 ####
 ##
 #
+_plot_1604_batch_GET_save_png_dbs(df, output_dir=direc_jpg)
+df['Path_png_dr'] = f'{direc_jpg}' + 'dbs_plot_' + df['ID'] + '.png'
+# -----######-----######-----######-----######-----######-----######-----
+#!#!#!#!#! RUNNING STATEMENTS #!#!#!#!#!
+
+_dr_1604_i2_GET_embedded_album_dr_custom(
+    df,
+    flip_deg=180 + 90,
+    scale=.282,
+    x_offset=-169,
+    y_offset=93,
+    position="center"
+)
+
 
 # -----######-----######-----######-----######-----######-----######-----
+#id and music note 
 
 
-# -----######-----######-----######-----######-----######-----######-----
+_keyid_1604_i3_GET_png_label_blocks_rightflush(df, save_dir=direc_jpg)
+df['Path_png_id_and_key'] = f'{direc_jpg}' + 'key_and_id_' + df['ID'] + '.png'
+
+
+
+#!#!#!#!#! RUNNING STATEMENTS #!#!#!#!#!
+
+_idkey_1604_i1_GET_embedded_album_idkey_right(
+    df,
+    flip_deg=0,
+    scale=.68,
+    x_offset=1,   # small padding from right
+    y_offset=80     # keep vertically centered
+)
+
+_aiff_2409_i1_GET_embed_aiff_covers(df)
+
+
+
+
 
 # -----######-----######-----######-----######-----######-----######-----
 # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
