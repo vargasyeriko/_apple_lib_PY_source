@@ -337,6 +337,9 @@ import pandas as pd
 # ###########################################################################
 # ########## CORE FUNCTION: _aiff_2409_coveriter_GET_save ###################
 # ###########################################################################
+# ###########################################################################
+# ########## CORE FUNCTION: _aiff_2409_coveriter_GET_save ###################
+# ###########################################################################
 def _aiff_2409_coveriter_GET_save(df, direc_jpg: str, default_pic: str = None) -> None:
     """
     Extracts and saves AIFF cover as 'cover_1_{ID}.jpg' in direc_jpg.
@@ -353,24 +356,28 @@ def _aiff_2409_coveriter_GET_save(df, direc_jpg: str, default_pic: str = None) -
         file_path = row["Path"]
         id_val = row["ID"]
 
-        temp_cover = os.path.splitext(file_path)[0] + ".jpg"  # Where your tool currently saves
+        temp_cover = os.path.splitext(file_path)[0] + ".jpg"
         final_cover = os.path.join(direc_jpg, f"cover_1_{id_val}.jpg")
 
-        # Make sure the temp cover doesn't already exist
         if os.path.exists(final_cover):
             os.remove(final_cover)
 
-        # Extract (you don't control where it saves, so we pick it up after)
         result = extract_aiff_cover(file_path, pic=default_pic)
 
         if result and os.path.exists(temp_cover):
             try:
-                shutil.move(temp_cover, final_cover)  # Cross-device safe move
+                shutil.move(temp_cover, final_cover)
                 print(f"TQM ✅ Cover saved: {final_cover}")
             except Exception as e:
                 print(f"❌ ERROR moving cover: {e}")
         else:
-            print(f"❌ TQM: Cover not found or extract failed for {file_path}")
+            # If no cover extracted, fallback black image
+            try:
+                img = Image.new("RGB", (1000, 1400), "black")
+                img.save(final_cover, format="JPEG")
+                print(f"🖤 Default black cover saved as fallback: {final_cover}")
+            except Exception as e:
+                print(f"❌ ERROR saving fallback black image: {e}")
 
 
 # def _aiff_2409_coveriter_GET_save(df, output_folder: str, default_pic: str = None) -> None:

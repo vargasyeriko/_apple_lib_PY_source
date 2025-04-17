@@ -291,12 +291,12 @@ df = _mix_0804_i1_GET_df_5cols(df) # gets jaws key up etc
 
 # -----######-----######-----######-----######-----######-----######-----
 # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-df['ID'] = ('dy' + df['bpm_consistency_cat'].str[2] 
+df['ID'] = ('idy_' + df['bpm_consistency_cat'].str[2] 
             + df['ms_LUFS_code'].str[2].str.upper() 
             + df['id_cat_lufs'].str.lower() +'_'
             + df['title'].str[0].str.lower()
             + df['artist'].str[0].str.upper()
-            + df['file_size'].astype(str).str[:2])
+            + df['file_size'].astype(str).str[5:7])
 
 
 df['ms_lufs']
