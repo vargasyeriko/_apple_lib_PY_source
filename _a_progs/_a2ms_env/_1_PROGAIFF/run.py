@@ -579,7 +579,7 @@ df['Path_png_id_and_key'] = f'{direc_jpg}' + 'key_and_id_' + df['ID'] + '.png'
 _idkey_1604_i1_GET_embedded_album_idkey_right(
     df,
     flip_deg=0,
-    scale=.68,
+    scale=.64,
     x_offset=1,   # small padding from right
     y_offset=80     # keep vertically centered
 )

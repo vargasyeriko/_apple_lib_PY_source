@@ -1015,22 +1015,37 @@ def _dr_1604_i2_GET_embedded_album_dr_custom(
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-
 def _keyid_1604_i3_GET_png_label_blocks_rightflush(df, save_dir='img_keyid'):
     """
     For each row (ID, KEY), create a 2-block image:
-      - TOP block: white bg, right-aligned KEY inside block
-      - BOTTOM block: washed white, right-aligned ID inside block
+      - TOP block: white bg, right-aligned KEY (large font)
+      - BOTTOM block: washed white bg, right-aligned ID (medium font)
+        and a clearly separated YRxx (large font) underneath
 
-    Exports as: key_and_id_{ID}.png into save_dir
+    Saves as: key_and_id_{ID}.png into save_dir
     """
+    import os
+    import pandas as pd
+    import matplotlib.pyplot as plt
+
     os.makedirs(save_dir, exist_ok=True)
 
     for _, row in df.iterrows():
-        ID = row['ID']
-        KEY = row['KEY']
+        ID = str(row['ID']).strip()
+        KEY = str(row['KEY']).strip()
         fname = f"key_and_id_{ID}.png"
         out_path = os.path.join(save_dir, fname)
+
+        # ----- Extract 2-digit year from 'rel_date' -----
+        try:
+            date_val = pd.to_datetime(row.get('rel_date', pd.NaT), errors='coerce')
+            year_suffix = f"{date_val.year % 100:02d}" if pd.notnull(date_val) else "00"
+        except:
+            year_suffix = "00"
+
+        # ----- Text to display -----
+        display_id = str(ID)[4:]
+        display_year = f"{year_suffix}"
 
         fig, ax = plt.subplots(figsize=(4, 4))
         ax.set_xlim(0, 1)
@@ -1038,23 +1053,85 @@ def _keyid_1604_i3_GET_png_label_blocks_rightflush(df, save_dir='img_keyid'):
         ax.axis('off')
 
         # Background blocks
-        ax.fill_between([0, 1], 0.5, 1, color='white')      # Top half
-        ax.fill_between([0, 1], 0.0, 0.5, color='#f2f2f2')   # Bottom half
+        ax.fill_between([0, 1], 0.5, 1.0, color='white')      # Top half
+        ax.fill_between([0, 1], 0.0, 0.5, color='#f2f2f2')     # Bottom half
 
-        # Texts - aligned inside their rectangles (flush right, no margin)
+        # --- TOP BLOCK: KEY ---
         ax.text(
-            0.98, 0.75, str(KEY),
+            0.98, 0.75, KEY,
             fontsize=58, fontweight='bold',
             ha='right', va='center', color='black'
         )
+
+        # --- BOTTOM BLOCK: ID (mid-size) ---
         ax.text(
-            0.98, 0.25, str(ID),
-            fontsize=31, fontweight='bold',
+            0.98, 0.35, display_id,  # moved a little higher
+            fontsize=26, fontweight='bold',
             ha='right', va='center', color='black'
         )
 
+        # --- BOTTOM BLOCK: YRxx (big, more spacing below) ---
+        ax.text(
+            0.98, 0.15, display_year,  # moved further down
+            fontsize=58, fontweight='bold',
+            ha='right', va='center', color='black'
+        )
+
+        plt.tight_layout()
         plt.savefig(out_path, bbox_inches='tight', dpi=150)
         plt.close()
+
+
+# def _keyid_1604_i3_GET_png_label_blocks_rightflush(df, save_dir='img_keyid'):
+#     """
+#     For each row (ID, KEY), create a 2-block image:
+#       - TOP block: white bg, right-aligned KEY inside block
+#       - BOTTOM block: washed white, right-aligned ID inside block
+
+#     Exports as: key_and_id_{ID}.png into save_dir
+#     """
+#     os.makedirs(save_dir, exist_ok=True)
+
+#     for _, row in df.iterrows():
+#         ID = row['ID']
+#         KEY = row['KEY']
+#         fname = f"key_and_id_{ID}.png"
+#         out_path = os.path.join(save_dir, fname)
+    
+#         # ----- Extract 2-digit year from 'rel_date' -----
+#         try:
+#             date_val = pd.to_datetime(row.get('rel_date', pd.NaT), errors='coerce')
+#             year_suffix = f"{date_val.year % 100:02d}" if pd.notnull(date_val) else "00"
+#         except:
+#             year_suffix = "00"
+    
+#         # ----- Text to display -----
+#         display_id = f"{str(ID)[4:]}_{year_suffix}"
+    
+#         fig, ax = plt.subplots(figsize=(4, 4))
+#         ax.set_xlim(0, 1)
+#         ax.set_ylim(0, 1)
+#         ax.axis('off')
+    
+#         # Background blocks
+#         ax.fill_between([0, 1], 0.5, 1, color='white')      # Top half
+#         ax.fill_between([0, 1], 0.0, 0.5, color='#f2f2f2')   # Bottom half
+    
+#         # Texts
+#         ax.text(
+#             0.98, 0.75, str(KEY),
+#             fontsize=58, fontweight='bold',
+#             ha='right', va='center', color='black'
+#         )
+#         ax.text(
+#             0.98, 0.23, display_id,
+#             fontsize=28, fontweight='bold',
+#             ha='right', va='center', color='black'
+#         )
+    
+#         plt.savefig(out_path, bbox_inches='tight', dpi=150)
+#         plt.close()
+    
 
 # -----######-----######-----######-----######-----######-----######-----
 # CORE FUNCTION: _idkey_1604_i1_GET_embedded_album_idkey_right
