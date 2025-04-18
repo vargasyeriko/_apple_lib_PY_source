@@ -586,7 +586,55 @@ _idkey_1604_i1_GET_embedded_album_idkey_right(
 
 _aiff_2409_i1_GET_embed_aiff_covers(df)
 
+###########
+############ ADD
 
+exec(open("_last_fns_.py",encoding="utf-8").read())
+
+df['rel_year'] = pd.to_datetime(df['rel_date'], errors='coerce').dt.strftime('%Y')
+
+#### write rel year to tags 
+df = _id3_1804_i1_GET_write_year_only(df)
+
+######## get remix better code
+df['remix'] = _remixcode_1804_i1_GET_code_remixtype(df['remixer'])
+
+######## find bought year 
+
+df = _path_1804_i1_GET_col_bought_year(df)
+#df['bought_year']
+
+########## RENAME and comment 
+
+df['comment'] = (
+    'A' + df['ID'].astype(str).str[4:] + '[' + df['bought_year'].astype(str).str[-2:] + ']' + '--'
+    + df['dominant_bpm'].astype(str) + 'BPM-'
+    + df['key_dj'].astype(str) + '_' + df['KEY'].astype(str) + '--'
+    + df['artist'].astype(str).str[:9].str.replace(' ', '', regex=False).str.upper() + '-'
+    + df['title'].astype(str).str[:9].str.replace(' ', '', regex=False).str.lower()
+    + '(' + df['remix'].fillna('').astype(str) + ')' + '--'
+    + df['genre'].astype(str).str[:4] + '-' 
+    + df['rel_year'].astype(str) + '-' 
+    + df['LABEL'].astype(str).str[:9].str.replace(' ', '', regex=False).str.upper()
+)
+
+
+
+df['re_name'] = (
+    'A' + df['ID'].astype(str).str[4:] + '[' + df['bought_year'].astype(str).str[-2:] + ']' + '--'
+    + df['artist'].astype(str).str[:9].str.replace(' ', '', regex=False).str.upper() + '-'
+    + df['title'].astype(str).str[:9].str.replace(' ', '', regex=False).str.lower()
+    + '(' + df['remix'].fillna('').astype(str) + ')' + '--'
+    + df['dominant_bpm'].astype(str) + 'BPM-' 
+    + df['key_dj'].astype(str) + '_' + df['KEY'].astype(str) + '--'
+    + df['genre'].astype(str).str[:4] + '-' 
+    + df['rel_year'].astype(str) + '-' 
+    + df['LABEL'].astype(str).str[:9].str.replace(' ', '', regex=False).str.upper()
+)
+
+#df['comment'].head(3)
+### OVER WRITE COMMENTS 
+_write_comment_id3_bulk(df)
 
 
 
@@ -595,15 +643,8 @@ _aiff_2409_i1_GET_embed_aiff_covers(df)
 # 
 # RENAME
 
-## re
-# df['re_name'] = ( df['ID'] +'_'
-#                  +'BY_'+ df['artist'].astype(str).str[:5]
-#                  +'_'+df['title'].astype(str).str[:9]
-#                  +'_'+ df['remix'].astype(str))
-# ####
-# ##
-# #
-# _rename_aiff_files_bulk(df)
+_rename_aiff_files_bulk(df)
+
 # -----######-----######-----######-----######-----######-----######-----
 
 
