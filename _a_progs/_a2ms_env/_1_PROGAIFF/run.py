@@ -589,7 +589,7 @@ _aiff_2409_i1_GET_embed_aiff_covers(df)
 ###########
 ############ ADD
 
-exec(open("_last_fns_.py",encoding="utf-8").read())
+exec(open("_last_fns.py",encoding="utf-8").read())
 
 df['rel_year'] = pd.to_datetime(df['rel_date'], errors='coerce').dt.strftime('%Y')
 
