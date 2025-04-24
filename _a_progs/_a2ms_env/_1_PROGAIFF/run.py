@@ -15,7 +15,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 #
 results_df = analyze_and_downsize_aiff(my_aiff)
 print(results_df.head())
-#input('')
+input('')
 print('\nALL AIFF in correct format -> if something changes go erase the already downsized\n ')
 #input('ENTER to analyze \n')
 ####
