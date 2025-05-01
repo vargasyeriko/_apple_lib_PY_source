@@ -54,11 +54,12 @@ df = _audio_attr_extract_11_INFO_AIFF(df, audio_extensions)#;input('')
 # COMM ::: _2_ LUFS
 #
 df['ms_lufs'] = compute_lufs_for_paths_AIFF(df['Path'])
+df['ms_lufs'] = pd.to_numeric(df['ms_lufs'], errors='coerce').replace(-np.inf, -40).fillna(-40)
 
 df['ms_LUFS_code'] = df['ms_lufs'].apply(_all_values_CREATE_12_LUFS_categories); 
 lufs_cols =['ms_lufs','ms_LUFS_code']
 df = _lufs_1004_i1_GET_df_id_cat_lufs(df)
-input("")
+
 ####
 ##
 #
@@ -154,6 +155,8 @@ df = _genre_0204_id3_filefallback_GET_df_with_genre(df, 'genre', 'GNkw', 'RMkw')
 print('DONE with getting 4_genre')
 print(df['genre_file'].value_counts())
 df['genre'] = df['genre'].str.replace('_', ' ').str.replace(r'^[^a-zA-Z]+', '', regex=True)
+df['genre'] = 'sample' 
+
 ####
 ##
 #
@@ -168,7 +171,7 @@ df['genre'] = df['genre'].str.replace('_', ' ').str.replace(r'^[^a-zA-Z]+', '', 
 df = _relyear_0204_id3_filefallback_GET_df_with_rel_year(df, 'rel_year', 'YRkw', 'PYkw')
 print('DONE with getting 5_release_year')
 print(df['rel_year_file'].value_counts())
-
+df['rel_year'] = '2025' 
 ####
 ##
 #
@@ -283,6 +286,7 @@ df = _reldate_0204_id3_filefallback_GET_df_with_rel_date(df, 'rel_date', 'RYkw_'
 # WRITE  release date  to TAGS
 _write_reldate_id3_bulk(df, path_col='Path', reldate_col='rel_date')
 #
+
 #
 # -----######-----######-----######-----######-----######-----######-----
 
@@ -292,6 +296,7 @@ _write_reldate_id3_bulk(df, path_col='Path', reldate_col='rel_date')
 
 df = _key_bulk_0815_librosa_middle_aiff_GET_output(df)
 df = _key_0403_i2_GET_keys(df) # get key_dj and key_music
+df['key_dj'] = df['key_dj'].replace([None, ''], '1A').fillna('1A')
 df = _write_tags_2712_id3_SET_key_bulk(df, "Path", "key_dj") # set to id3 tag
 df = _mix_0804_i1_GET_df_5cols(df) # gets jaws key up etc 
 
@@ -319,6 +324,7 @@ df.sort_values(by='ID')
 df['comment'] = df['ID'] +'_'+ df['KEY'] 
 _write_comment_id3_bulk(df) # write comment to id3 tags
 ####
+input('')
 ## CHECK POINT
 #
 
@@ -645,6 +651,7 @@ df['re_name'] = (
 
 #df['comment'].head(3)
 ### OVER WRITE COMMENTS 
+
 _write_comment_id3_bulk(df)
 
 
