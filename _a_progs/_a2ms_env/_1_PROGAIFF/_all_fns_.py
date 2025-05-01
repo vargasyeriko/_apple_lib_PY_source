@@ -132,6 +132,68 @@ def _filefinder_by_EXT_GET_df(my_folder_path, file_extensions):
 
 
 
+# import os
+# from pydub import AudioSegment
+# from pydub.utils import mediainfo
+# import pandas as pd
+# import mutagen
+# from mutagen.aiff import AIFF
+
+# def analyze_and_downsize_aiff(folder_path, target_sample_rate=44100, target_bit_depth=16):
+#     # Dictionary to store combination frequencies
+#     combination_frequency = {}
+
+#     # Walk through all subfolders
+#     for root, _, files in os.walk(folder_path):
+#         for file in files:
+#             if file.lower().endswith(".aiff"):
+#                 file_path = os.path.join(root, file)
+#                 try:
+#                     info = mediainfo(file_path)
+#                     sample_rate = int(info.get('sample_rate', 0))
+#                     bit_depth = int(info.get('bits_per_sample', 0))
+
+#                     # Record the current combination
+#                     combination = (sample_rate, bit_depth)
+#                     combination_frequency[combination] = combination_frequency.get(combination, 0) + 1
+
+#                     # Check if downsizing is needed
+#                     if sample_rate != target_sample_rate or bit_depth != target_bit_depth:
+#                         print(f"{file} requires downsizing: Sample Rate={sample_rate}, Bit Depth={bit_depth}")
+#                         proceed = input("Enter 'y' to proceed with downsizing: ").strip().lower()
+#                         if proceed == 'y':
+#                             downsize_aiff(file_path, target_sample_rate, target_bit_depth)
+
+#                 except Exception as e:
+#                     print(f"Error processing file {file}: {e}")
+
+#     # Convert results to DataFrame for readability
+#     df = pd.DataFrame(
+#         [(sr, bd, count) for (sr, bd), count in combination_frequency.items()],
+#         columns=['Sample Rate (Hz)', 'Bit Depth', 'Count']
+#     )
+#     df.sort_values(by='Count', ascending=False, inplace=True)
+#     return df
+
+# def downsize_aiff(file_path, target_sample_rate, target_bit_depth):
+#     try:
+#         audio = AudioSegment.from_file(file_path, format="aiff")
+#         downsized_audio = audio.set_frame_rate(target_sample_rate).set_sample_width(target_bit_depth // 8)
+        
+#         # Preserve metadata
+#         original_metadata = mutagen.File(file_path)
+#         output_file_path = file_path.replace(".aiff", "_downsized.aiff")
+#         downsized_audio.export(output_file_path, format="aiff")
+
+#         # Restore metadata
+#         downsized_file = AIFF(output_file_path)
+#         for key, value in original_metadata.items():
+#             downsized_file[key] = value
+#         downsized_file.save()
+#         print(f"Successfully downsized {file_path} to {output_file_path} with metadata preserved")
+#     except Exception as e:
+#         print(f"Error downsizing file {file_path}: {e}")
+
 import os
 from pydub import AudioSegment
 from pydub.utils import mediainfo
@@ -139,11 +201,14 @@ import pandas as pd
 import mutagen
 from mutagen.aiff import AIFF
 
-def analyze_and_downsize_aiff(folder_path, target_sample_rate=44100, target_bit_depth=16):
-    # Dictionary to store combination frequencies
-    combination_frequency = {}
+# -----######-----###### MAIN FUNCTION: Analyze & Prompt Downsize -----######-----######
+def analyze_and_prompt_downsize_aiff(folder_path, target_sample_rate=44100, target_bit_depth=16):
+    """
+    Scans for .aiff files, reports those needing downsizing. Prompts user before processing.
+    """
+    to_downsize = []
+    all_stats = []
 
-    # Walk through all subfolders
     for root, _, files in os.walk(folder_path):
         for file in files:
             if file.lower().endswith(".aiff"):
@@ -152,49 +217,62 @@ def analyze_and_downsize_aiff(folder_path, target_sample_rate=44100, target_bit_
                     info = mediainfo(file_path)
                     sample_rate = int(info.get('sample_rate', 0))
                     bit_depth = int(info.get('bits_per_sample', 0))
+                    all_stats.append((file_path, sample_rate, bit_depth))
 
-                    # Record the current combination
-                    combination = (sample_rate, bit_depth)
-                    combination_frequency[combination] = combination_frequency.get(combination, 0) + 1
-
-                    # Check if downsizing is needed
                     if sample_rate != target_sample_rate or bit_depth != target_bit_depth:
-                        print(f"{file} requires downsizing: Sample Rate={sample_rate}, Bit Depth={bit_depth}")
-                        proceed = input("Enter 'y' to proceed with downsizing: ").strip().lower()
-                        if proceed == 'y':
-                            downsize_aiff(file_path, target_sample_rate, target_bit_depth)
+                        to_downsize.append((file_path, sample_rate, bit_depth))
 
                 except Exception as e:
-                    print(f"Error processing file {file}: {e}")
+                    print(f"❌ Error reading {file_path}: {e}")
 
-    # Convert results to DataFrame for readability
-    df = pd.DataFrame(
-        [(sr, bd, count) for (sr, bd), count in combination_frequency.items()],
-        columns=['Sample Rate (Hz)', 'Bit Depth', 'Count']
-    )
-    df.sort_values(by='Count', ascending=False, inplace=True)
-    return df
+    # Show all detected mismatches
+    print("\n🔍 Files that need downsizing:")
+    for i, (fp, sr, bd) in enumerate(to_downsize, 1):
+        print(f"{i:02d}. {os.path.basename(fp)} — SR: {sr}, Bit: {bd}")
 
+    print(f"\n📊 Total AIFF files: {len(all_stats)}")
+    print(f"⚠️ Files requiring downsizing: {len(to_downsize)}")
+
+    if to_downsize:
+        proceed = input("\n👉 Proceed with downsizing and replacing originals? (y/n): ").strip().lower()
+        if proceed == 'y':
+            for file_path, _, _ in to_downsize:
+                downsize_aiff(file_path, target_sample_rate, target_bit_depth)
+        else:
+            print("⛔ Cancelled by user.")
+    else:
+        print("✅ All files already match target specs.")
+
+
+# -----######-----###### SUB FUNCTION: Downsize AIFF + Replace Original -----######-----######
 def downsize_aiff(file_path, target_sample_rate, target_bit_depth):
+    """
+    Downsizes a single AIFF file, writes new version with metadata, deletes original.
+    """
     try:
         audio = AudioSegment.from_file(file_path, format="aiff")
         downsized_audio = audio.set_frame_rate(target_sample_rate).set_sample_width(target_bit_depth // 8)
-        
+
         # Preserve metadata
         original_metadata = mutagen.File(file_path)
-        output_file_path = file_path.replace(".aiff", "_downsized.aiff")
-        downsized_audio.export(output_file_path, format="aiff")
+        temp_output_path = file_path + ".temp.aiff"
 
-        # Restore metadata
-        downsized_file = AIFF(output_file_path)
+        # Export downsized audio
+        downsized_audio.export(temp_output_path, format="aiff")
+
+        # Restore metadata to temp file
+        downsized_file = AIFF(temp_output_path)
         for key, value in original_metadata.items():
             downsized_file[key] = value
         downsized_file.save()
-        print(f"Successfully downsized {file_path} to {output_file_path} with metadata preserved")
+
+        # Replace original file
+        os.remove(file_path)
+        os.rename(temp_output_path, file_path)
+
+        print(f"✅ Downsized and replaced: {os.path.basename(file_path)}")
     except Exception as e:
-        print(f"Error downsizing file {file_path}: {e}")
-
-
+        print(f"❌ Error downsizing {file_path}: {e}")
 
 ##### COMM ::: _1_ MSG_AUDIO general ATTRIBUTES
 ##
