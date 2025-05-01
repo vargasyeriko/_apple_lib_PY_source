@@ -54,27 +54,38 @@ df = _audio_attr_extract_11_INFO_AIFF(df, audio_extensions)#;input('')
 # COMM ::: _2_ LUFS
 #
 df['ms_lufs'] = compute_lufs_for_paths_AIFF(df['Path'])
-df['ms_LUFS_code'] = df['ms_lufs'].apply(_all_values_CREATE_12_LUFS_categories); lufs_cols =['ms_lufs','ms_LUFS_code']
+
+df['ms_LUFS_code'] = df['ms_lufs'].apply(_all_values_CREATE_12_LUFS_categories); 
+lufs_cols =['ms_lufs','ms_LUFS_code']
 df = _lufs_1004_i1_GET_df_id_cat_lufs(df)
+input("")
 ####
 ##
 #
 
 # -----######-----######-----######-----######-----######-----######-----
-
+print(df.head())
 # -----######-----######-----######-----######-----######-----######-----
 # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 # 
 # COMM ::: _3_BPM Dynamic vs Normal 
-#
+#input("")
 # Process the DataFrame with 10% of the track excluded from the start and end:
-df = _df_bpm_2409_i1_GET_df_bpm_variation(
-    df,
-    path_column='Path',
-    sr_column='sr',
-    exclude_start_pct=0.20,
-    exclude_end_pct=0.10
-)
+# !#!#!#!#! RUNNING STATEMENTS #!#!#!#!#!
+# !#!#!#!#! RUNNING STATEMENTS #!#!#!#!#!
+df = _df_bpm_2409_i1_GET_df_bpm_variation(df)
+df['dominant_bpm'] = df['dominant_bpm'].round(0).astype(int)
+
+
+
+
+# df = _df_bpm_2409_i1_GET_df_bpm_variation(
+#     df,
+#     path_column='Path',
+#     sr_column='sr',
+#     exclude_start_pct=0.20,
+#     exclude_end_pct=0.10
+# )
 #print(df_with_bpm.head())
 df = _cat_0204_bpm_consistency_GET_cat(df)
 ####

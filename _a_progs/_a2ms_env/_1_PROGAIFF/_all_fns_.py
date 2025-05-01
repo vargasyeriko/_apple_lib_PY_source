@@ -572,148 +572,106 @@ def _lufs_1004_i1_GET_df_id_cat_lufs(df: pd.DataFrame) -> pd.DataFrame:
 # 0_FNS: Core functions for BPM variation detection in AIFF files using DF attributes, TQDM, 
 # BPM Consistency Index, and configurable exclusion of track intros/outros
 
+# -----######-----###### BULLETPROOF BPM ANALYSIS PER FILE -----######-----######
+# -----######-----###### BPM BEST-EFFORT ANALYSIS FUNCTION -----######-----######
+# -----######-----###### FINAL BEST-EFFORT BPM ANALYSIS (ROUNDED) -----######-----######
 import numpy as np
 import pandas as pd
 import librosa
-from tqdm import tqdm  # For progress bar
-from collections import Counter
+import os
+import warnings
+from scipy.stats import mode
+from tqdm import tqdm
 
 def _bpm_2409_i1_GET_bpm_variation(
-    filepath: str,
-    target_sr: int = None,
-    window_sec: float = 10.0,
-    hop_sec: float = 5.0,
-    exclude_start_pct: float = 0.1,
-    exclude_end_pct: float = 0.1
+    file_path,
+    target_sr=None,
+    window_sec=10.0,
+    hop_sec=5.0,
+    exclude_start_pct=0.1,
+    exclude_end_pct=0.1
 ):
-    """
-    Analyze an AIFF audio file to compute BPM variation metrics and a single BPM Consistency Index,
-    excluding a configurable percentage of the track from both the start and end (to avoid intros/outros).
-    
-    The function loads the file using the provided sample rate (if any), normalizes the audio,
-    excludes the specified portions, splits the remaining audio into overlapping windows, and computes
-    the BPM for each segment. BPM values are rounded and aggregated to calculate the BPM Consistency Index
-    (percentage of windows with the dominant BPM).
-    
-    Parameters:
-        filepath (str): Path to the AIFF file.
-        target_sr (int): Sample rate from your DataFrame. If None, the file's native rate is used.
-        window_sec (float): Duration in seconds for each analysis window (default: 10 sec).
-        hop_sec (float): Hop duration in seconds between windows (default: 5 sec).
-        exclude_start_pct (float): Percentage of the track to exclude from the start (default: 0.1 or 10%).
-        exclude_end_pct (float): Percentage of the track to exclude from the end (default: 0.1 or 10%).
-    
-    Returns:
-        dict: BPM variation metrics including:
-            - 'mean_bpm': Mean BPM across windows.
-            - 'std_bpm': Standard deviation of BPM.
-            - 'min_bpm': Minimum BPM.
-            - 'max_bpm': Maximum BPM.
-            - 'variation_percentage': (std_bpm / mean_bpm * 100).
-            - 'dominant_bpm': The most frequent rounded BPM value.
-            - 'bpm_consistency': Percentage of windows with the dominant BPM (the single pointer).
-    """
     try:
-        y, sr = librosa.load(filepath, sr=target_sr)
-    except Exception as e:
-        # Return NaN metrics if file loading fails
-        return {
-            'mean_bpm': np.nan,
-            'std_bpm': np.nan,
-            'min_bpm': np.nan,
-            'max_bpm': np.nan,
-            'variation_percentage': np.nan,
-            'dominant_bpm': np.nan,
-            'bpm_consistency': np.nan
-        }
-    
-    # Normalize the audio in memory
-    if np.max(np.abs(y)) > 0:
-        y = y / np.max(np.abs(y))
-    
-    # Exclude intro and outro portions based on specified percentages
-    total_samples = len(y)
-    start_idx = int(total_samples * exclude_start_pct)
-    end_idx = int(total_samples * (1 - exclude_end_pct))
-    y = y[start_idx:end_idx]
-    
-    window_length = int(window_sec * sr)
-    hop_length = int(hop_sec * sr)
-    bpm_values = []
-    
-    # Process the audio in overlapping windows
-    for start in range(0, len(y) - window_length + 1, hop_length):
-        segment = y[start:start + window_length]
-        # Attempt using the updated API; fall back if not available.
-        try:
-            tempo = librosa.feature.rhythm.tempo(y=segment, sr=sr, aggregate=np.median)
-        except AttributeError:
-            tempo = librosa.beat.tempo(y=segment, sr=sr, aggregate=np.median)
-        bpm_values.append(tempo[0])
-    
-    bpm_array = np.array(bpm_values)
-    mean_bpm = np.mean(bpm_array)
-    std_bpm = np.std(bpm_array)
-    min_bpm = np.min(bpm_array)
-    max_bpm = np.max(bpm_array)
-    variation_percentage = (std_bpm / mean_bpm * 100) if mean_bpm != 0 else 0
-    
-    # Aggregate the BPM values by rounding to the nearest integer and compute frequency distribution
-    rounded_bpms = [round(b) for b in bpm_values] if bpm_values else []
-    counter = Counter(rounded_bpms)
-    if counter:
-        dominant_bpm, dominant_count = counter.most_common(1)[0]
-        total_count = sum(counter.values())
-        bpm_consistency = dominant_count / total_count * 100
-    else:
-        dominant_bpm = np.nan
-        bpm_consistency = np.nan
-    
-    return {
-        'mean_bpm': mean_bpm,
-        'std_bpm': std_bpm,
-        'min_bpm': min_bpm,
-        'max_bpm': max_bpm,
-        'variation_percentage': variation_percentage,
-        'dominant_bpm': dominant_bpm,
-        'bpm_consistency': bpm_consistency
-    }
+        if not os.path.isfile(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
 
+        y, sr = librosa.load(file_path, sr=target_sr)
+        duration = len(y) / sr
+
+        # Step 1: Try full-track BPM
+        full_bpm, _ = librosa.beat.beat_track(y=y, sr=sr)
+        if full_bpm > 30:
+            return {
+                'mean_bpm': round(full_bpm, 1),
+                'std_bpm': 0.0,
+                'min_bpm': round(full_bpm, 1),
+                'max_bpm': round(full_bpm, 1),
+                'variation_percentage': 0.0,
+                'dominant_bpm': round(full_bpm, 1),
+                'bpm_consistency': 1.0
+            }
+
+        # Step 2: Try windowed fallback
+        if duration < window_sec:
+            raise ValueError("Too short for windowed BPM")
+
+        start_sample = int(sr * exclude_start_pct * duration)
+        end_sample = int(sr * (1 - exclude_end_pct) * duration)
+        y = y[start_sample:end_sample]
+
+        hop_length = int(hop_sec * sr)
+        win_length = int(window_sec * sr)
+
+        bpm_values = []
+        for start in range(0, len(y) - win_length + 1, hop_length):
+            window = y[start:start + win_length]
+            if len(window) < win_length:
+                continue
+            tempo, _ = librosa.beat.beat_track(y=window, sr=sr)
+            if tempo > 30:
+                bpm_values.append(tempo)
+
+        if len(bpm_values) == 0:
+            raise ValueError("No valid BPM windows")
+
+        bpm_array = np.array(bpm_values)
+        variation = 100 * (np.std(bpm_array) / np.mean(bpm_array)) if np.mean(bpm_array) > 0 else 0.0
+        dominant = round(float(mode(bpm_array, keepdims=True)[0][0]), 1) if len(bpm_array) > 0 else 0.0
+
+        consistency = 1 - (np.std(bpm_array) / np.max(bpm_array)) if np.max(bpm_array) > 0 else 0.0
+
+        return {
+            'mean_bpm': round(float(np.mean(bpm_array)), 1),
+            'std_bpm': round(float(np.std(bpm_array)), 1),
+            'min_bpm': round(float(np.min(bpm_array)), 1),
+            'max_bpm': round(float(np.max(bpm_array)), 1),
+            'variation_percentage': round(float(variation), 1),
+            'dominant_bpm': round(float(dominant), 1),
+            'bpm_consistency': round(float(consistency), 2)
+        }
+
+    except Exception as e:
+        warnings.warn(f"⚠️ {os.path.basename(file_path)} failed: {e}")
+        return {
+            'mean_bpm': 0.0,
+            'std_bpm': 0.0,
+            'min_bpm': 0.0,
+            'max_bpm': 0.0,
+            'variation_percentage': 0.0,
+            'dominant_bpm': 0.0,
+            'bpm_consistency': 0.0
+        }
+
+# -----######-----###### APPLY TO DF -----######-----######
 def _df_bpm_2409_i1_GET_df_bpm_variation(
-    input_df: pd.DataFrame,
-    path_column: str = 'Path',
-    sr_column: str = 'sr',
-    window_sec: float = 10.0,
-    hop_sec: float = 5.0,
-    exclude_start_pct: float = 0.1,
-    exclude_end_pct: float = 0.1
-) -> pd.DataFrame:
-    """
-    Process a DataFrame of AIFF file paths and append BPM variation metrics including the BPM Consistency Index.
-    Allows exclusion of a configurable percentage of the track's start and end to avoid distorting intros/outros.
-    
-    For each file in the specified column, the function uses the sample rate provided in the DataFrame
-    to compute BPM metrics and appends the following new columns:
-        - 'mean_bpm'
-        - 'std_bpm'
-        - 'min_bpm'
-        - 'max_bpm'
-        - 'variation_percentage'
-        - 'dominant_bpm'
-        - 'bpm_consistency'
-    
-    Parameters:
-        input_df (pd.DataFrame): DataFrame containing file attribute columns.
-        path_column (str): Column name with file paths (default: 'Path').
-        sr_column (str): Column name with sample rate (default: 'sr').
-        window_sec (float): Analysis window duration in seconds.
-        hop_sec (float): Hop duration in seconds between windows.
-        exclude_start_pct (float): Percentage of the track to exclude from the start (default: 0.1).
-        exclude_end_pct (float): Percentage of the track to exclude from the end (default: 0.1).
-    
-    Returns:
-        pd.DataFrame: The original DataFrame with BPM variation metrics appended.
-    """
+    input_df,
+    path_column='Path',
+    sr_column='sr',
+    window_sec=10.0,
+    hop_sec=5.0,
+    exclude_start_pct=0.1,
+    exclude_end_pct=0.1
+):
     results = {
         'mean_bpm': [],
         'std_bpm': [],
@@ -723,11 +681,13 @@ def _df_bpm_2409_i1_GET_df_bpm_variation(
         'dominant_bpm': [],
         'bpm_consistency': []
     }
-    
-    # Iterate over each file path with a TQDM progress bar
-    for idx, row in tqdm(input_df.iterrows(), total=input_df.shape[0], desc="Processing BPM Dynamic"):
-        file_path = row[path_column]
+
+    tqdm.pandas(desc="🎵 BPM Analysis")
+
+    for idx, row in tqdm(input_df.iterrows(), total=input_df.shape[0], desc="BPM per file"):
+        file_path = row.get(path_column, None)
         target_sr = int(row[sr_column]) if pd.notna(row[sr_column]) else None
+
         bpm_result = _bpm_2409_i1_GET_bpm_variation(
             file_path,
             target_sr=target_sr,
@@ -736,25 +696,91 @@ def _df_bpm_2409_i1_GET_df_bpm_variation(
             exclude_start_pct=exclude_start_pct,
             exclude_end_pct=exclude_end_pct
         )
-        results['mean_bpm'].append(bpm_result['mean_bpm'])
-        results['std_bpm'].append(bpm_result['std_bpm'])
-        results['min_bpm'].append(bpm_result['min_bpm'])
-        results['max_bpm'].append(bpm_result['max_bpm'])
-        results['variation_percentage'].append(bpm_result['variation_percentage'])
-        results['dominant_bpm'].append(bpm_result['dominant_bpm'])
-        results['bpm_consistency'].append(bpm_result['bpm_consistency'])
-    
-    # Append new columns to a copy of the original DataFrame
-    input_df = input_df.copy()
-    input_df['mean_bpm'] = results['mean_bpm']
-    input_df['std_bpm'] = results['std_bpm']
-    input_df['min_bpm'] = results['min_bpm']
-    input_df['max_bpm'] = results['max_bpm']
-    input_df['variation_percentage'] = results['variation_percentage']
-    input_df['dominant_bpm'] = results['dominant_bpm']
-    input_df['bpm_consistency'] = results['bpm_consistency']
-    
-    return input_df
+
+        for key in results:
+            results[key].append(bpm_result[key])
+
+    df_out = input_df.copy()
+    for key in results:
+        df_out[key] = results[key]
+
+    return df_out
+
+
+# -----######-----###### BPM VARIATION ANALYSIS (FAILSAFE W/ ZERO FALLBACK) -----######-----######
+import numpy as np
+import librosa
+import os
+import warnings
+from scipy.stats import mode
+
+def _bpm_2409_i1_GET_bpm_variation(
+    file_path,
+    target_sr=None,
+    window_sec=10.0,
+    hop_sec=5.0,
+    exclude_start_pct=0.1,
+    exclude_end_pct=0.1
+):
+    """
+    Analyze BPM variation in windows across an audio file.
+    If BPM analysis fails (e.g., short file), returns all 0s instead of NaNs.
+    """
+    try:
+        if not os.path.isfile(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
+
+        y, sr = librosa.load(file_path, sr=target_sr)
+        duration = len(y) / sr
+
+        if duration < window_sec:
+            raise ValueError("Too short for one BPM window")
+
+        start_sample = int(sr * exclude_start_pct * duration)
+        end_sample = int(sr * (1 - exclude_end_pct) * duration)
+        y = y[start_sample:end_sample]
+
+        hop_length = int(hop_sec * sr)
+        win_length = int(window_sec * sr)
+
+        bpm_values = []
+        for start in range(0, len(y) - win_length + 1, hop_length):
+            window = y[start:start + win_length]
+            if len(window) < win_length:
+                continue
+            tempo, _ = librosa.beat.beat_track(y=window, sr=sr)
+            if tempo > 0:
+                bpm_values.append(tempo)
+
+        if len(bpm_values) == 0:
+            raise ValueError("No BPM values detected")
+
+        bpm_array = np.array(bpm_values)
+        variation = 100 * (np.std(bpm_array) / np.mean(bpm_array)) if np.mean(bpm_array) > 0 else 0.0
+        dominant = float(mode(bpm_array, keepdims=True)[0]) if len(bpm_array) > 0 else 0.0
+        consistency = 1 - (np.std(bpm_array) / np.max(bpm_array)) if np.max(bpm_array) > 0 else 0.0
+
+        return {
+            'mean_bpm': float(np.mean(bpm_array)),
+            'std_bpm': float(np.std(bpm_array)),
+            'min_bpm': float(np.min(bpm_array)),
+            'max_bpm': float(np.max(bpm_array)),
+            'variation_percentage': float(variation),
+            'dominant_bpm': float(dominant),
+            'bpm_consistency': float(consistency)
+        }
+
+    except Exception as e:
+        warnings.warn(f"⚠️ Skipping {os.path.basename(file_path)}: {e}")
+        return {
+            'mean_bpm': 0.0,
+            'std_bpm': 0.0,
+            'min_bpm': 0.0,
+            'max_bpm': 0.0,
+            'variation_percentage': 0.0,
+            'dominant_bpm': 0.0,
+            'bpm_consistency': 0.0
+        }
 
 # 0_FNS: Core Function to Categorize bpm_consistency
 # ----------------------------------------------------
