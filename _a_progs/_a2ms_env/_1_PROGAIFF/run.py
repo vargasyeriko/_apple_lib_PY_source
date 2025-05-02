@@ -324,7 +324,7 @@ df.sort_values(by='ID')
 df['comment'] = df['ID'] +'_'+ df['KEY'] 
 _write_comment_id3_bulk(df) # write comment to id3 tags
 ####
-input('')
+#input('')
 ## CHECK POINT
 #
 
