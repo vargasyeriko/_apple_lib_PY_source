@@ -321,8 +321,8 @@ df.sort_values(by='ID')
 # COMM
 #
 ## re
-df['comment'] = df['ID'] +'_'+ df['KEY'] 
-_write_comment_id3_bulk(df) # write comment to id3 tags
+#df['comment'] = df['ID'] +'_'+ df['KEY'] 
+#_write_comment_id3_bulk(df) # write comment to id3 tags
 ####
 #input('')
 ## CHECK POINT
