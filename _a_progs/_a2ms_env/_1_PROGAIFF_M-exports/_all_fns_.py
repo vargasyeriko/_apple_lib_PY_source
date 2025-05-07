@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 from tqdm import tqdm
+
 """This function searches the provided folder path for all specified music file extensions (case insensitive),
 or, if no file extensions are provided, it will return all files regardless of extension.
 

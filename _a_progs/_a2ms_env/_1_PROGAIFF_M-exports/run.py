@@ -5,17 +5,40 @@ exec(open("_all_fns_.py",encoding="utf-8").read())
 #my_aiff ="/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/cover"
 ##
 #
-
+from datetime import datetime
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 ###############################################         PREPARE VARIABLES / ausio_extension and loc -> directory variables# -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 # 
-# CHECK THAT AIFF FILES ARE IN CORRECT FORMAT OR REEFORMAT 
+# CHECK THAT AIFF FILES ARE IN CORRECT FORMAT OR REEFORMAT ---- >>>> PREPROCESS
+exec(open("_prepro_.py",encoding="utf-8").read())
+# change to AIFF
+_aiff_2904_i6_GET_numbered_all(
+    root_dir=in_dir,
+    out_dir=out_dir,
+    target_sr=44100,
+    target_bit=16,
+    target_ch=2,
+    overwrite=False,
+    show_err=True
+)
+# rename
+df_renamed = _rename_0605_titleonly_GET_renamed_folder_files(
+    aiff_dir=out_dir,
+    custom_artist="YODJ",
+    custom_genre="M-plus-exports",
+    custom_label="YODJ-M-plus-exports",
+    custom_release_date="2025_01_01"
+)
+#normalize
+_audio_0605_deluxenorm_GET_overwrite_noclip_aiffs(out_dir)
+
+
 #
 #results_df = analyze_and_prompt_downsize_aiff(my_aiff)
 #print(results_df.head())
-#input('')
+input('PREPROCESS done ENTER to cntd')
 print('\nALL AIFF in correct format -> if something changes go erase the already downsized\n ')
 #input('ENTER to analyze \n')
 ####
@@ -155,7 +178,7 @@ df = _genre_0204_id3_filefallback_GET_df_with_genre(df, 'genre', 'GNkw', 'RMkw')
 print('DONE with getting 4_genre')
 print(df['genre_file'].value_counts())
 df['genre'] = df['genre'].str.replace('_', ' ').str.replace(r'^[^a-zA-Z]+', '', regex=True)
-df['genre'] = 'sample' 
+df['genre'] = genre_rn 
 
 ####
 ##
@@ -171,7 +194,7 @@ df['genre'] = 'sample'
 df = _relyear_0204_id3_filefallback_GET_df_with_rel_year(df, 'rel_year', 'YRkw', 'PYkw')
 print('DONE with getting 5_release_year')
 print(df['rel_year_file'].value_counts())
-df['rel_year'] = '2025' 
+df['rel_year'] = rel_yr_rn
 ####
 ##
 #
@@ -302,21 +325,40 @@ df = _mix_0804_i1_GET_df_5cols(df) # gets jaws key up etc
 
 # -----######-----######-----######-----######-----######-----######-----
 
+#input('')
 
+# -----######-----###### BASE36 ID GEN (CLEAN + COMPACT) -----######-----######
+from datetime import datetime
+
+def _idgen_0605_base36_GET_ids_df(df):
+    def base36(n):
+        chars = '0123456789abcdefghijklmnopqrstuvwxyz'
+        r = ''
+        while n > 0:
+            n, rem = divmod(n, 36)
+            r = chars[rem] + r
+        return r.rjust(2, '0')
+    
+    prefix = str(int(datetime.today().strftime('%m'))) + str(int(datetime.today().strftime('%d')))
+    df['ID'] = [prefix + base36(i) for i in range(len(df))]
+    return df
+df = _idgen_0605_base36_GET_ids_df(df)
 # -----######-----######-----######-----######-----######-----######-----
 
 # -----######-----######-----######-----######-----######-----######-----
-# -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-df['ID'] = ('idy_' + df['bpm_consistency_cat'].str[2] 
-            + df['ms_LUFS_code'].str[2].str.upper() 
-            + df['id_cat_lufs'].str.lower() +'_'
-            + df['title'].str[0].str.lower()
-            + df['artist'].str[0].str.upper()
-            + df['file_size'].astype(str).str[5:7])
+# # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+# df['ID'] = ('idy_' + df['bpm_consistency_cat'].str[2] 
+#             + df['ms_LUFS_code'].str[2].str.upper() 
+#             + df['id_cat_lufs'].str.lower() +'_'
+#             + df['title'].str[0].str.lower()
+#             + df['artist'].str[0].str.upper()
+#             + df['file_size'].astype(str).str[5:7])
+# b36 = lambda n: (lambda r='': r if n==0 else b36(n//36)(r + '0123456789abcdefghijklmnopqrstuvwxyz'[n%36]))().rjust(2,'0')
+# prefix = datetime.today().strftime('%m%d')[-2:]
+# df['ID'] = [prefix + b36(i) for i in range(len(df))]
 
-
-df['ms_lufs']
-df.sort_values(by='ID')
+#df['ms_lufs']
+#df.sort_values(by='ID')
 # 
 # COMM
 #
@@ -624,35 +666,34 @@ df = _path_1804_i1_GET_col_bought_year(df)
 ########## RENAME and comment 
 
 df['comment'] = (
-    'A' + df['ID'].astype(str).str[4:] + '[' + df['bought_year'].astype(str).str[-2:] + ']' + '--'
-    + df['dominant_bpm'].astype(str) + 'BPM-'
-    + df['key_dj'].astype(str) + '_' + df['KEY'].astype(str) + '--'
-    + df['artist'].astype(str).str[:9].str.replace(' ', '', regex=False).str.upper() + '-'
-    + df['title'].astype(str).str[:9].str.replace(' ', '', regex=False).str.lower()
-    + '(' + df['remix'].fillna('').astype(str) + ')' + '--'
-    + df['genre'].astype(str).str[:4] + '-' 
-    + df['rel_year'].astype(str) + '-' 
-    + df['LABEL'].astype(str).str[:9].str.replace(' ', '', regex=False).str.upper()
+    'e' + df['ID'].astype(str) + '-' 
+    + df['key_dj'].astype(str) + '-' + df['key_music'].astype(str)
+    + '---25-' 
+    + df['genre'].astype(str).str[:9].str.replace(' ', '', regex=False).str.upper() + '-'
+    + df['title'].astype(str).str[:28].str.replace(' ', '', regex=False).str.lower()
+    + '---timeSEC-' 
+    + df['dur_seconds'].astype(int).astype(str)
+    + '-bpm' + df['dominant_bpm'].astype(str)
+    + '-lu' + df['id_cat_lufs'].astype(str).str.upper()
 )
-
-
-
+_write_comment_id3_bulk(df)
 df['re_name'] = (
-    'A' + df['ID'].astype(str).str[4:] + '[' + df['bought_year'].astype(str).str[-2:] + ']' + '--'
+    'e' + df['ID'].astype(str) + '-' 
+    + df['key_dj'].astype(str)  + df['key_music'].astype(str)
+    + '---25-' 
     + df['artist'].astype(str).str[:9].str.replace(' ', '', regex=False).str.upper() + '-'
-    + df['title'].astype(str).str[:9].str.replace(' ', '', regex=False).str.lower()
-    + '(' + df['remix'].fillna('').astype(str) + ')' + '--'
-    + df['dominant_bpm'].astype(str) + 'BPM-' 
-    + df['key_dj'].astype(str) + '_' + df['KEY'].astype(str) + '--'
-    + df['genre'].astype(str).str[:4] + '-' 
-    + df['rel_year'].astype(str) + '-' 
-    + df['LABEL'].astype(str).str[:9].str.replace(' ', '', regex=False).str.upper()
+    + df['title'].astype(str).str[:28].str.replace(' ', '', regex=False).str.lower()
+    + '---sec' 
+    + df['dur_seconds'].round(0).astype(int).astype(str)
+    + '-' + df['dominant_bpm'].astype(str)
+    + '-lu' + df['id_cat_lufs'].astype(str).str.upper() 
 )
 
+print(df['re_name'])
 #df['comment'].head(3)
 ### OVER WRITE COMMENTS 
 
-_write_comment_id3_bulk(df)
+
 
 
 
