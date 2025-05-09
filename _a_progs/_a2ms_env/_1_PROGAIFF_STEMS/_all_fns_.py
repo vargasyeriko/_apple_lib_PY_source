@@ -2300,56 +2300,93 @@ def _write_comment_id3_bulk(df, path_col='Path', comment_col='comment'):
 
 ### RENAME
 # 0_FNS: Core Function for Renaming AIFF Files
-# -----#####-----#####-----#####-----#####-----#####-----#####
-import os
-from tqdm import tqdm
 
 def _rename_aiff_files_bulk(df, path_col='Path', rename_col='re_name'):
     """
     Renames AIFF files based on the provided DataFrame.
-    
-    This function uses the file path from the `Path` column and renames
-    the file using the new base name from the `re_name` column, appending
-    the '.aiff' extension. The renamed file is saved in the same directory
-    as the original file.
-    
-    Parameters:
-        df (pandas.DataFrame): DataFrame containing:
-            - 'Path': Original file path for each AIFF file.
-            - 're_name': New base name for the file (without extension).
-        path_col (str): Column name for file paths (default is 'Path').
-        rename_col (str): Column name for new file names (default is 're_name').
-    
-    Returns:
-        int: The total number of files successfully renamed.
+
+    Ensures that the `re_name` column contains valid string file names.
+    If a value is not coercible to string, the row is skipped.
     """
     success_count = 0
 
-    # Iterate over DataFrame rows with a TQM progress bar
     for _, row in tqdm(df.iterrows(), total=len(df), desc="Renaming AIFF files"):
         old_path = row[path_col]
         new_base = row[rename_col]
-        # Append the .aiff extension to the new name
-        new_name = new_base + ".aiff"
-        
-        # Check if the original file exists
-        if not os.path.isfile(old_path):
-            print(f"File not found: {old_path}")
-            continue
-        
+
         try:
-            # Determine the directory and construct the new file path
+            # Coerce to string and ensure it's a valid name
+            new_base = str(new_base).strip()
+            if not new_base or new_base.lower() == 'nan':
+                raise ValueError("Invalid new name (empty or NaN)")
+            new_name = new_base + ".aiff"
+
+            if not os.path.isfile(old_path):
+                print(f"❌ File not found: {old_path}")
+                continue
+
             dir_name = os.path.dirname(old_path)
             new_path = os.path.join(dir_name, new_name)
-            
-            # Rename the file
+
             os.rename(old_path, new_path)
             success_count += 1
+
         except Exception as e:
-            print(f"Error renaming file {old_path} to {new_path}: {e}")
-    
-    print(f"Total files renamed: {success_count}")
+            print(f"⚠️ Error renaming file {old_path} → {new_base}: {e}")
+
+    print(f"✅ Total files renamed: {success_count}")
     return success_count
+
+# -----#####-----#####-----#####-----#####-----#####-----#####
+# import os
+# from tqdm import tqdm
+
+# def _rename_aiff_files_bulk(df, path_col='Path', rename_col='re_name'):
+#     """
+#     Renames AIFF files based on the provided DataFrame.
+    
+#     This function uses the file path from the `Path` column and renames
+#     the file using the new base name from the `re_name` column, appending
+#     the '.aiff' extension. The renamed file is saved in the same directory
+#     as the original file.
+    
+#     Parameters:
+#         df (pandas.DataFrame): DataFrame containing:
+#             - 'Path': Original file path for each AIFF file.
+#             - 're_name': New base name for the file (without extension).
+#         path_col (str): Column name for file paths (default is 'Path').
+#         rename_col (str): Column name for new file names (default is 're_name').
+    
+#     Returns:
+#         int: The total number of files successfully renamed.
+#     """
+#     success_count = 0
+
+#     # Iterate over DataFrame rows with a TQM progress bar
+#     for _, row in tqdm(df.iterrows(), total=len(df), desc="Renaming AIFF files"):
+#         old_path = row[path_col]
+#         new_base = row[rename_col]
+#         # Append the .aiff extension to the new name
+#         new_name = new_base + ".aiff"
+        
+#         # Check if the original file exists
+#         if not os.path.isfile(old_path):
+#             print(f"File not found: {old_path}")
+#             continue
+        
+#         try:
+#             # Determine the directory and construct the new file path
+#             dir_name = os.path.dirname(old_path)
+#             new_path = os.path.join(dir_name, new_name)
+            
+#             # Rename the file
+#             os.rename(old_path, new_path)
+#             success_count += 1
+#         except Exception as e:
+#             print(f"Error renaming file {old_path} to {new_path}: {e}")
+    
+#     print(f"Total files renamed: {success_count}")
+#     return success_count
 
 ####
 ##

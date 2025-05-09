@@ -291,17 +291,55 @@ df = _mix_0804_i1_GET_df_5cols(df) # gets jaws key up etc
 
 # -----######-----######-----######-----######-----######-----######-----
 # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-df['ID'] = ('idy_' + df['bpm_consistency_cat'].str[2] 
-            + df['ms_LUFS_code'].str[2].str.upper() 
-            + df['id_cat_lufs'].str.lower() +'_'
-            + df['title'].str[0].str.lower()
-            + df['artist'].str[0].str.upper()
-            + df['file_size'].astype(str).str[5:7])
+# df['ID'] = ('idy_' + df['bpm_consistency_cat'].str[2] 
+#             + df['ms_LUFS_code'].str[2].str.upper() 
+#             + df['id_cat_lufs'].str.lower() +'_'
+#             + df['title'].str[0].str.lower()
+#             + df['artist'].str[0].str.upper()
+#             + df['file_size'].astype(str).str[5:7])
 
 
-df['ms_lufs']
-df.sort_values(by='ID')
+# df['ms_lufs']
+# df.sort_values(by='ID')
 # 
+from datetime import datetime
+
+def _idgen_0605_base36_GET_ids_df(df, acronym, silence_id):
+    def base36(n):
+        chars = '0123456789abcdefghijklmnopqrstuvwxyz'
+        r = ''
+        while n > 0:
+            n, rem = divmod(n, 36)
+            r = chars[rem] + r
+        return r.rjust(2, '0')  # pad to always have at least 2 chars
+    
+    prefix = str(int(datetime.today().strftime('%m'))) + str(int(datetime.today().strftime('%d')))
+    df['ID'] = [f"{acronym}{silence_id}-{prefix}{base36(i)}" for i in range(len(df))]
+    return df
+
+
+
+df = _idgen_0605_base36_GET_ids_df(df, acronym, silence_id)
+
+
+from datetime import datetime
+
+def _idgen_0605_base36_GET_ids_df(df, acronym, silence_id):
+    def base36(n):
+        chars = '0123456789abcdefghijklmnopqrstuvwxyz'
+        r = ''
+        while n > 0:
+            n, rem = divmod(n, 36)
+            r = chars[rem] + r
+        return r.rjust(2, '0')  # pad to always have at least 2 chars
+    
+    prefix = str(int(datetime.today().strftime('%m'))) + str(int(datetime.today().strftime('%d')))
+    df['ID'] = [f"{acronym}{silence_id}-{prefix}{base36(i)}" for i in range(len(df))]
+    return df
+
+
+
+df = _idgen_0605_base36_GET_ids_df(df, acronym, silence_id)
 # COMM
 #
 ## re
@@ -603,34 +641,53 @@ df['remix'] = _remixcode_1804_i1_GET_code_remixtype(df['remixer'])
 
 df = _path_1804_i1_GET_col_bought_year(df)
 #df['bought_year']
-
+df['bpm_consistency_cat'] = df['bpm_consistency_cat'].astype(str)
+df['ms_LUFS_code'] = df['ms_LUFS_code'].astype(str)
+df['id_cat_lufs'] = df['id_cat_lufs'].astype(str)
 ########## RENAME and comment 
+##### LUFS 
+
+lufs_cat_to_pct = {
+    'A': 10, 'B': 12, 'C': 14, 'D': 16, 'E': 18,
+    'F': 21, 'G': 24, 'H': 27, 'I': 30, 'J': 33,
+    'K': 36, 'L': 38, 'M': 40,  # 10 → 40 = 30% range
+
+    'N': 45, 'O': 52, 'P': 60, 'Q': 68, 'R': 75,
+    'S': 82, 'T': 87, 'U': 91, 'V': 94, 'W': 96,
+    'X': 97, 'Y': 98, 'Z': 99  # 41 → 99 = 70% range
+}
+df['lufs_pct'] = df['id_cat_lufs'].str.upper().map(lufs_cat_to_pct).fillna(0)
+
 
 df['comment'] = (
-    'A' + df['ID'].astype(str).str[4:] + '[' + df['bought_year'].astype(str).str[-2:] + ']' + '--'
-    + df['dominant_bpm'].astype(str) + 'BPM-'
-    + df['key_dj'].astype(str) + '_' + df['KEY'].astype(str) + '--'
-    + df['artist'].astype(str).str[:9].str.replace(' ', '', regex=False).str.upper() + '-'
-    + df['title'].astype(str).str[:9].str.replace(' ', '', regex=False).str.lower()
-    + '(' + df['remix'].fillna('').astype(str) + ')' + '--'
-    + df['genre'].astype(str).str[:4] + '-' 
-    + df['rel_year'].astype(str) + '-' 
-    + df['LABEL'].astype(str).str[:9].str.replace(' ', '', regex=False).str.upper()
+    df['bpm_consistency_cat'].fillna('').astype(str).str.pad(3, fillchar='X').str[2]+
+    'LUFS--' +
+    df['id_cat_lufs'].astype(str).str.upper() + '-' +
+    df['lufs_pct'].astype(int).astype(str) + '%--' +
+    df['bpm_consistency_cat'].fillna('').astype(str).str.pad(3, fillchar='X').str[2]+
+    df['KEY'].astype(str) + '_' +
+    df['dominant_bpm'].astype(str) + 'BPM--' +
+    'id_' + df['ID'].astype(str)
 )
 
 
+### RENAME
 
 df['re_name'] = (
-    'A' + df['ID'].astype(str).str[4:] + '[' + df['bought_year'].astype(str).str[-2:] + ']' + '--'
-    + df['artist'].astype(str).str[:9].str.replace(' ', '', regex=False).str.upper() + '-'
-    + df['title'].astype(str).str[:9].str.replace(' ', '', regex=False).str.lower()
-    + '(' + df['remix'].fillna('').astype(str) + ')' + '--'
-    + df['dominant_bpm'].astype(str) + 'BPM-' 
-    + df['key_dj'].astype(str) + '_' + df['KEY'].astype(str) + '--'
-    + df['genre'].astype(str).str[:4] + '-' 
-    + df['rel_year'].astype(str) + '-' 
-    + df['LABEL'].astype(str).str[:9].str.replace(' ', '', regex=False).str.upper()
+    'dylu_'+ df['bpm_consistency_cat'].fillna('').astype(str).str.pad(3, fillchar='X').str[2] +
+    df['ms_LUFS_code'].fillna('').astype(str).str.pad(3, fillchar='X').str[2].str.upper() +
+    '[' + df['bought_year'].fillna('').astype(str).str[-2:] + ']' + '-' +
+    df['dominant_bpm'].fillna('').astype(str) + 'BPM-' +
+    df['key_dj'].fillna('').astype(str) + '_' + df['KEY'].fillna('').astype(str) + '--' +
+    'id_' + df['ID'].astype(str) + '---' +
+    df['genre'].fillna('').astype(str).str[:4] + '-' +
+    df['LABEL'].fillna('').astype(str).str[:9].str.replace(' ', '', regex=False).str.upper() + '--by--' +
+    df['artist'].fillna('').astype(str).str[:16].str.replace(' ', '', regex=False).str.upper() + '-' +
+    df['title'].fillna('').astype(str).str[:16].str.replace(' ', '', regex=False).str.lower() +
+    '(' + df['remix'].fillna('').astype(str) + ')' + '-' +
+    df['rel_year'].fillna('').astype(str)
 )
+
 
 #df['comment'].head(3)
 ### OVER WRITE COMMENTS 
@@ -640,7 +697,9 @@ _write_comment_id3_bulk(df)
 
 # -----######-----######-----######-----######-----######-----######-----
 # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-# 
+# HASH 
+df = _hash_bulk_2812_audio_GET_df_hashes(df)
+
 # RENAME
 
 _rename_aiff_files_bulk(df)
@@ -652,7 +711,6 @@ _rename_aiff_files_bulk(df)
 
 # -----######-----######-----######-----######-----######-----######-----
 # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-# 
 # COMM
 # Assume 'df' is your DataFrame and you have a list of column names to clean, e.g.:
 # list_of_columns = ['column1', 'column2', 'column3']
@@ -670,8 +728,8 @@ _rename_aiff_files_bulk(df)
 # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 # 
 # COMM
-df = _hash_bulk_2812_audio_GET_df_hashes(df)
-print("DOoooooooooooo\n\n\n\n\n\n\nne...")
+
+print("DOooooo\n\n\nooo\n\noooo\n\n\n\n\n\n\nne...")
 ## re
 ####
 ##

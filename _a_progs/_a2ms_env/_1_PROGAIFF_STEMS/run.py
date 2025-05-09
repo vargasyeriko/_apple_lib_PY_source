@@ -11,30 +11,30 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 ###############################################         PREPARE VARIABLES / ausio_extension and loc -> directory variables# -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 # 
-# CHECK THAT AIFF FILES ARE IN CORRECT FORMAT OR REEFORMAT ---- >>>> PREPROCESS
-exec(open("_prepro_.py",encoding="utf-8").read())
-# change to AIFF
-_aiff_2904_i6_GET_numbered_all(
-    root_dir=in_dir,
-    out_dir=out_dir,
-    target_sr=44100,
-    target_bit=16,
-    target_ch=2,
-    overwrite=False,
-    show_err=True
-)
-# rename
-df_renamed = _rename_0605_titleonly_GET_renamed_folder_files(
-    aiff_dir=out_dir,
-    custom_artist="Various",
-    custom_genre=rn_custom_genre,
-    custom_label=rn_custom_genre,
-    custom_release_date="2025_01_01"
-)
-#normalize
-_audio_0605_deluxenorm_GET_overwrite_noclip_aiffs(out_dir)
+# # CHECK THAT AIFF FILES ARE IN CORRECT FORMAT OR REEFORMAT ---- >>>> PREPROCESS
+# exec(open("_prepro_.py",encoding="utf-8").read())
+# # change to AIFF
+# _aiff_2904_i6_GET_numbered_all(
+#     root_dir=in_dir,
+#     out_dir=out_dir,
+#     target_sr=44100,
+#     target_bit=16,
+#     target_ch=2,
+#     overwrite=False,
+#     show_err=True
+# )
+# # rename
+# df_renamed = _rename_0605_titleonly_GET_renamed_folder_files(
+#     aiff_dir=out_dir,
+#     custom_artist="Various",
+#     custom_genre=rn_custom_genre,
+#     custom_label=rn_custom_genre,
+#     custom_release_date="2025_01_01"
+# )
+# #normalize
+# _audio_0605_deluxenorm_GET_overwrite_noclip_aiffs(out_dir)
 
-
+#input('')
 #
 #results_df = analyze_and_prompt_downsize_aiff(my_aiff)
 #print(results_df.head())
@@ -327,22 +327,40 @@ df = _mix_0804_i1_GET_df_5cols(df) # gets jaws key up etc
 
 #input('')
 
-# -----######-----###### BASE36 ID GEN (CLEAN + COMPACT) -----######-----######
+# # -----######-----###### BASE36 ID GEN (CLEAN + COMPACT) -----######-----######
+# from datetime import datetime
+
+# def _idgen_0605_base36_GET_ids_df(df):
+#     def base36(n):
+#         chars = '0123456789abcdefghijklmnopqrstuvwxyz'
+#         r = ''
+#         while n > 0:
+#             n, rem = divmod(n, 36)
+#             r = chars[rem] + r
+#         return r.rjust(2, '0')
+    
+#     prefix = str(int(datetime.today().strftime('%m'))) + str(int(datetime.today().strftime('%d')))
+#     df['ID'] = [prefix + base36(i) for i in range(len(df))]
+#     return df
+
 from datetime import datetime
 
-def _idgen_0605_base36_GET_ids_df(df):
+def _idgen_0605_base36_GET_ids_df(df, acronym, silence_id):
     def base36(n):
         chars = '0123456789abcdefghijklmnopqrstuvwxyz'
         r = ''
         while n > 0:
             n, rem = divmod(n, 36)
             r = chars[rem] + r
-        return r.rjust(2, '0')
+        return r.rjust(2, '0')  # pad to always have at least 2 chars
     
     prefix = str(int(datetime.today().strftime('%m'))) + str(int(datetime.today().strftime('%d')))
-    df['ID'] = [prefix + base36(i) for i in range(len(df))]
+    df['ID'] = [f"{acronym}{silence_id}-{prefix}{base36(i)}" for i in range(len(df))]
     return df
-df = _idgen_0605_base36_GET_ids_df(df)
+
+
+
+df = _idgen_0605_base36_GET_ids_df(df, acronym, silence_id)
 # -----######-----######-----######-----######-----######-----######-----
 
 # -----######-----######-----######-----######-----######-----######-----
@@ -627,7 +645,7 @@ _dr_1604_i2_GET_embedded_album_dr_custom(
 # -----######-----######-----######-----######-----######-----######-----
 #id and music note 
 df['ID_save'] =df['ID']
-df['ID'] = acronym + df['ID'] 
+#df['ID'] = acronym + df['ID'] 
 _keyid_1604_i3_GET_png_label_blocks_rightflush(df, save_dir=direc_jpg)
 df['Path_png_id_and_key'] = f'{direc_jpg}' + 'key_and_id_' + df['ID'] + '.png'
 df['ID']  = df['ID_save'] 
@@ -662,11 +680,16 @@ df['remix'] = _remixcode_1804_i1_GET_code_remixtype(df['remixer'])
 
 df = _path_1804_i1_GET_col_bought_year(df)
 #df['bought_year']
+###### ENSURE about seconds 
+
+
+df['dur_seconds'] = pd.to_numeric(df['dur_seconds'], errors='coerce')
+df['dur_seconds'] = df['dur_seconds'].round(0).astype(int)
 
 ########## RENAME and comment 
 
 df['comment'] = (
-    acronym  + df['ID'].astype(str) + '-' 
+    df['ID'].astype(str) + '-' 
     + df['key_dj'].astype(str) + '-' + df['key_music'].astype(str)
     + '---25-' 
     + df['genre'].astype(str).str[:9].str.replace(' ', '', regex=False).str.upper() + '-'
@@ -676,9 +699,11 @@ df['comment'] = (
     + '-bpm' + df['dominant_bpm'].astype(str)
     + '-lu' + df['id_cat_lufs'].astype(str).str.upper()
 )
+
+
 _write_comment_id3_bulk(df)
 df['re_name'] = (
-    acronym  + df['ID'].astype(str) + '-' 
+    df['ID'].astype(str) + '-' 
     + df['key_dj'].astype(str)  + df['key_music'].astype(str)
     + '---25-' 
     + df['artist'].astype(str).str[:9].str.replace(' ', '', regex=False).str.upper() + '-'
@@ -695,13 +720,11 @@ print(df['re_name'])
 
 
 
-
-
 # -----######-----######-----######-----######-----######-----######-----
 # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 # 
 # RENAME
-
+input('')
 _rename_aiff_files_bulk(df)
 
 # -----######-----######-----######-----######-----######-----######-----

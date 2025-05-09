@@ -1055,7 +1055,7 @@ def _keyid_1604_i3_GET_png_label_blocks_rightflush(df, save_dir='img_keyid'):
             year_suffix = "0000"
 
         # ----- Text to display -----
-        display_id = str(ID)[4:]
+        display_id = str(ID)
         display_year = f"{year_suffix}"
 
         fig, ax = plt.subplots(figsize=(4, 4))
