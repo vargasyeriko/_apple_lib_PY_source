@@ -1,0 +1,766 @@
+# Welcome to Sonic Pi
+
+# Welcome to Sonic Pi
+
+use_bpm 130
+
+# Define piano chords
+chords = [:E4, :C4, :G4, :D4]
+
+# Define bass pattern
+bass_pattern = (ring :E2, :G2, :A2, :B2)
+
+# Define drums
+live_loop :drums do
+  sample :bd_haus
+  sleep 0.5
+  sample :drum_cymbal_closed
+  sleep 0.5
+end
+
+# Play piano chords
+live_loop :piano do
+  sync :drums
+  use_synth :piano
+  4.times do
+    play_chord chords, release: 1.5, amp: 0.7
+    sleep 2
+  end
+end
+
+# Build up to bass drop
+live_loop :buildup do
+  sync :drums
+  use_synth :piano
+  with_fx :reverb, mix: 0.5, room: 0.9 do
+    play_pattern_timed [:E5, :F5, :G5, :A5], [0.5, 0.5, 0.5, 0.5], release: 0.5, amp: 0.8
+    sleep 0.5
+    play_pattern_timed [:B5, :A5, :G5, :F5], [0.5, 0.5, 0.5, 0.5], release: 0.5, amp: 0.8
+    sleep 0.5
+    play_pattern_timed [:E5, :F5, :G5, :A5], [0.5, 0.5, 0.5, 0.5], release: 0.5, amp: 0.8
+    sleep 0.5
+    play_pattern_timed [:B5, :A5, :G5, :F5], [0.5, 0.5, 0.5, 0.5], release: 0.5, amp: 0.8
+  end
+end
+
+# Play bass drop
+live_loop :bass do
+  sync :drums
+  use_synth :tb303
+  with_fx :slicer, phase: 0.25 do
+    4.times do
+      play bass_pattern.tick, release: 0.2, amp: 2
+      sleep 0.25
+    end
+  end
+end
+################################################################################################
+################################################################################################
+################################################################################################
+# Define the melody and chords
+melody_notes = [:c4, :e4, :g4, :b4, :c5, :b4, :g4, :e4]
+chords = [chord(:c, :major7), chord(:a, :minor7), chord(:d, :minor7), chord(:g, :dom7)]
+
+# Set overall parameters
+use_bpm 60
+use_synth :piano
+
+# Play the melody
+live_loop :melody do
+  play melody_notes.tick, release: 0.6, amp: 0.5
+  sleep 0.5
+end
+
+# Play the chords
+live_loop :chords do
+  play chords.choose, release: 3
+  sleep 4
+end
+
+# Add some soft background texture
+live_loop :texture do
+  with_fx :echo, mix: 0.3 do
+    sample :ambi_soft_buzz, rate: 0.5, amp: 0.3
+    sleep 8
+  end
+end
+
+################################################################################################
+################################################################################################
+################################################################################################
+# Welcome to Sonic Pi
+
+# Define the melody and chords
+melody_notes = [:c4, :e4, :g4, :b4, :c5, :b4, :g4, :e4]
+chords = [chord(:c, :major7), chord(:a, :minor7), chord(:d, :minor7), chord(:g, :dom7)]
+
+# Set overall parameters
+use_bpm 60
+
+# Play the melody with a soft synth
+live_loop :melody do
+  use_synth :prophet
+  play melody_notes.tick, release: 1, amp: 0.3
+  sleep 0.5
+end
+
+# Play the chords with a pad sound
+live_loop :chords do
+  use_synth :pad
+  play chords.choose, sustain: 2, release: 2, amp: 0.25
+  sleep 4
+end
+
+# Add a soft background texture
+live_loop :texture do
+  with_fx :reverb, room: 0.8 do
+    sample :ambi_choir, rate: 0.5, amp: 0.2
+    sleep 8
+  end
+end
+
+# Additional ambient layer
+live_loop :ambient do
+  use_synth :hollow
+  play [:c3, :e3, :g3].choose, release: 4, amp: 0.02
+  sleep 4
+end
+
+################################################################################################
+################################################################################################
+################################################################################################
+# Define the melody, high melody, and chords
+melody_notes = [:c4, :e4, :g4, :b4, :c5, :b4, :g4, :e4]
+high_melody_notes = [:e5, :g5, :b5, :c6]
+chords = [chord(:c, :major7), chord(:a, :minor7), chord(:d, :minor7), chord(:g, :dom7)]
+
+# Set overall parameters
+use_bpm 60
+
+# Main melody with a soft synth
+live_loop :melody do
+  use_synth :prophet
+  play melody_notes.tick, release: 1, amp: 0.3
+  sleep 0.5
+end
+
+# High melody with echo and reverb
+live_loop :high_melody do
+  use_synth :pretty_bell
+  with_fx :echo, phase: 0.25, decay: 2 do
+    with_fx :reverb, room: 0.8 do
+      play high_melody_notes.choose, release: 0.5, amp: 0.2
+      sleep 1
+    end
+  end
+end
+
+# Chords with a pad sound
+live_loop :chords do
+  use_synth :pad
+  play chords.choose, sustain: 2, release: 2, amp: 0.25
+  sleep 4
+end
+
+# Soft background texture
+live_loop :texture do
+  with_fx :reverb, room: 0.8 do
+    sample :ambi_choir, rate: 0.5, amp: 0.2
+    sleep 8
+  end
+end
+
+# Additional ambient layer
+live_loop :ambient do
+  use_synth :hollow
+  play [:c3, :e3, :g3].choose, release: 4, amp: 0.2
+  sleep 4
+end
+# Welcome to Sonic Pi
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+# Define the melody, high melody, and chords
+melody_notes = [:c4, :e4, :g4, :b4, :c5, :b4, :g4, :e4]
+high_melody_notes = [:e5, :g5, :b5, :c6].map { |x| x - 12 } # Lowering an octave
+chords = [chord(:c, :major7), chord(:a, :minor7), chord(:d, :minor7), chord(:g, :dom7)]
+
+# Set overall parameters
+use_bpm 60
+
+# Function to play the melody with a crisper sound
+define :play_melody do
+  use_synth :saw
+  melody_notes.each do |note|
+    play note, release: 0.2, amp: 0.2
+    sleep 0.5
+  end
+end
+
+# Function to play high melody with echo and reverb
+define :play_high_melody do
+  use_synth :tb303
+  high_melody_notes.each do |note|
+    with_fx :echo, phase: 0.25, decay: 2 do
+      with_fx :reverb, room: 0.8 do
+        play note, release: 0.3, amp: 0.1
+        sleep 1
+      end
+    end
+  end
+end
+
+# Function to play chords
+define :play_chords do
+  use_synth :blade
+  chords.each do |chord|
+    play chord, sustain: 2, release: 2, amp: 0.2
+    sleep 4
+  end
+end
+
+# Play each part for 4 cycles (16 bars in total)
+4.times do
+  in_thread { play_melody }
+  in_thread { play_high_melody }
+  play_chords
+end
+# Welcome to Sonic Pi
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+# Welcome to Sonic Pi
+
+# Define the melody, high melody, and chords
+melody_notes = [:c4, :e4, :g4, :b4, :c5, :b4, :g4, :e4]
+high_melody_notes = [:e5, :g5, :b5, :c6].map { |x| x - 12 } # Lowering an octave
+chords = [chord(:c, :major7), chord(:a, :minor7), chord(:d, :minor7), chord(:g, :dom7)]
+
+# Set overall parameters
+use_bpm 60
+set :run_melody, true
+set :run_high_melody, true
+set :run_chords, true
+
+# Main melody with a crisp synth
+live_loop :melody, auto_cue: false do
+  stop unless get(:run_melody)
+  use_synth :saw
+  play melody_notes.tick, release: 0.2, amp: 0.2
+  sleep 0.5
+  set :run_melody, false if look > melody_notes.length * 4 - 1
+end
+
+# High melody with echo and reverb
+live_loop :high_melody, auto_cue: false do
+  stop unless get(:run_high_melody)
+  use_synth :tb303
+  with_fx :echo, phase: 0.25, decay: 2 do
+    with_fx :reverb, room: 0.8 do
+      play high_melody_notes.choose, release: 0.3, amp: 0.1
+      sleep 1
+    end
+  end
+  set :run_high_melody, false if tick(:high_note) >= high_melody_notes.length * 4
+end
+
+# Chords with a pad sound
+live_loop :chords, auto_cue: false do
+  stop unless get(:run_chords)
+  use_synth :blade
+  play chords.choose, sustain: 2, release: 2, amp: 0.2
+  sleep 4
+  set :run_chords, false if tick(:chord) >= 4
+end
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+
+# Define the melodies and chords
+melody_notes = [:c4, :e4, :g4, :b4, :c5, :b4, :g4, :e4].ring
+sci_fi_melody_notes = [:g5, :f5, :e5, :d5, :c5, :b4, :a4, :g4].ring
+chords = [chord(:c, :major7), chord(:a, :minor7), chord(:d, :minor7), chord(:g, :dom7)].ring
+
+# Set overall parameters
+use_bpm 60
+set :run_melody, true
+set :run_sci_fi_melody, true
+set :run_chords, true
+
+# Main melody with a crisp synth
+live_loop :melody, auto_cue: false do
+  stop unless get(:run_melody)
+  use_synth :saw
+  play melody_notes.tick, release: 0.5, amp: 0.15
+  sleep 0.5
+  set :run_melody, false if look > melody_notes.length * 8 - 1
+end
+
+# Science fiction melody
+live_loop :sci_fi_melody, auto_cue: false do
+  stop unless get(:run_sci_fi_melody)
+  use_synth :blade
+  play sci_fi_melody_notes.tick, release: 0.5, amp: 0.1
+  sleep 0.25
+  set :run_sci_fi_melody, false if look > sci_fi_melody_notes.length * 8 - 1
+end
+
+# Chords with a pad sound
+live_loop :chords, auto_cue: false do
+  stop unless get(:run_chords)
+  use_synth :blade
+  play chords.tick, sustain: 2, release: 2, amp: 0.2
+  sleep 4
+  set :run_chords, false if look > 8
+end
+
+################################################################################################
+################################################################################################
+################################################################################################
+# Define the melody and chords
+melody_notes = [:c4, :d4, :e4, :g4, :a4, :g4, :e4, :d4].ring
+chords = [chord(:c, 'major7'), chord(:g, 'major7'), chord(:a, 'minor7'), chord(:f, 'major7')].ring
+
+# Set overall parameters
+use_bpm 60
+
+# Play a gentle melody
+live_loop :melody do
+  use_synth :hollow
+  play melody_notes.tick, release: 4, amp: 0.3
+  sleep 4
+end
+
+# Play soft chords
+live_loop :chords do
+  use_synth :pad
+  play chords.tick, sustain: 4, release: 5, amp: 0.25
+  sleep 4
+end
+
+# Add ambient nature sounds
+live_loop :nature do
+  sample :ambi_lunar_land, rate: 0.5, amp: 0.2
+  sleep 8
+end
+
+# Background drone for depth
+live_loop :drone do
+  with_fx :reverb, room: 0.8 do
+    use_synth :sine
+    play :c2, sustain: 8, release: 0, amp: 0.2
+    sleep 8
+  end
+end
+
+################################################################################################
+####################################GREAT YOGA ##################################################
+################################################################################################
+
+# Define melodies and chords
+melody_notes = [:c4, :e4, :g4, :a4, :f4, :e4, :d4, :c4].ring
+chords = [chord(:c, 'major7'), chord(:f, 'major7'), chord(:g, 'major7'), chord(:a, 'minor7')].ring
+nature_notes = [:e5, :d5, :c5, :b4].ring
+
+# Set overall parameters
+use_bpm 60
+
+# Play a reflective melody
+live_loop :melody do
+  use_synth :hollow
+  play melody_notes.tick, release: 4, amp: 0.3
+  sleep 4
+end
+
+# Play soft, soothing chords
+live_loop :chords do
+  use_synth :pad
+  play chords.tick, sustain: 4, release: 5, amp: 0.25
+  sleep 4
+end
+
+# Add ambient nature-inspired sounds
+live_loop :nature do
+  use_synth :pretty_bell
+  play nature_notes.tick, release: 2, amp: 0.2
+  sleep 2
+end
+
+# Background drone to add depth
+live_loop :drone do
+  with_fx :reverb, room: 0.8 do
+    use_synth :sine
+    play :c2, sustain: 8, release: 0, amp: 0.2
+    sleep 8
+  end
+end
+
+# Control the duration to 64 bars
+in_thread do
+  sleep 64 * 4 # 64 bars at 60 bpm with 4 beats per bar
+  stop :melody
+  stop :chords
+  stop :nature
+  stop :drone
+end
+
+################################################################################################
+###########################MEDITATION DELUXE ##################################################
+################################################################################################
+# Set overall parameters
+use_bpm 60  # Beats per minute
+use_synth :pad  # Warm, ambient pad sound
+
+# Define melodies and chords
+melody_notes = [:c4, :d4, :g4, :e4, :f4, :a4, :g4, :c5].ring  # Uplifting melody
+chords = [chord(:c, 'major7'), chord(:f, 'major7'), chord(:e, 'minor7'), chord(:g, 'major7')].ring
+
+# Play a gentle, uplifting melody
+live_loop :melody do
+  play melody_notes.tick, release: 4, amp: 0.25
+  sleep 4
+end
+
+# Play soothing chords
+live_loop :chords do
+  play chords.tick, sustain: 4, release: 5, amp: 0.2
+  sleep 4
+end
+
+# Ambient nature-inspired sounds
+live_loop :nature do
+  sample :ambi_piano, rate: 0.5, amp: 0.2  # Lowered the high frequencies
+  sleep 8
+end
+
+# Background drone for depth
+live_loop :drone do
+  with_fx :reverb, room: 0.8 do
+    play :c2, sustain: 8, release: 0, amp: 0.15
+    sleep 8
+  end
+end
+
+# Control the duration to 64 bars
+in_thread do
+  sleep 64 * 4  # 64 bars at 60 bpm with 4 beats per bar
+  stop :melody
+  stop :chords
+  stop :nature
+  stop :drone
+end
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+# Yoga Podcast Melody - Uplifting and Reflective
+use_bpm 60
+
+# Introduction
+with_fx :reverb, room: 0.8 do
+  play_pattern_timed [:C4, :E5, :G4, :B5], [2, 2, 2, 2], release: 2
+end
+
+# Melody
+in_thread do
+  2.times do
+    play_pattern_timed scale(:e4, :minor_pentatonic), [0.5], release: 0.75
+  end
+end
+
+# Bass Elements - Gentle and Subtle
+in_thread do
+  with_fx :lpf, cutoff: 70 do
+    4.times do
+      play :C2, release: 4, amp: 0.5
+      sleep 4
+    end
+  end
+end
+
+# Storytelling/Narrative Layer
+in_thread do
+  with_fx :echo, phase: 0.75 do
+    play_pattern_timed [:G3, :E3, :C3, :E3], [1, 1, 1, 1], release: 1, amp: 0.6
+  end
+end
+
+# Conclusion
+sleep 16
+with_fx :fadeout, amp: 0.3 do
+  play_pattern_timed [:C4, :B3, :G3, :E3], [2, 2, 2, 2], release: 2
+end
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+# Yoga Podcast Melody - Nostalgic and Story-like
+use_bpm 60
+
+# Nostalgic Melody
+define :nostalgic_melody do
+  use_synth :piano
+  play_pattern_timed scale(:a3, :minor), [0.75], release: 1.5, amp: 0.6
+end
+
+# Layered Harmonies
+define :harmonies do
+  use_synth :pluck
+  with_fx :echo, phase: 0.5 do
+    play_chord chord(:a3, :minor7), release: 2
+    sleep 2
+    play_chord chord(:c4, :major7), release: 2
+    sleep 2
+  end
+end
+
+# Subtle Rhythmic Elements
+define :rhythmic_elements do
+  in_thread do
+    use_synth :prophet
+    4.times do
+      play_pattern_timed [:e2, :d2, :c2], [1.5], release: 1.2, amp: 0.4
+    end
+  end
+end
+
+# Bass Line
+define :bass_line do
+  use_synth :fm
+  play_pattern_timed [:a1, :c2, :e2, :a1], [2], release: 1.5, amp: 0.5
+end
+
+# Ambient Textures
+define :ambient_textures do
+  with_fx :reverb, room: 1 do
+    use_synth :pad
+    play :a2, sustain: 4, release: 4, amp: 0.3
+    sleep 8
+  end
+end
+
+# Play Sections
+in_thread { nostalgic_melody }
+in_thread { harmonies }
+in_thread { rhythmic_elements }
+in_thread { bass_line }
+ambient_textures
+
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+# Extended Yoga and Health Podcast Background Music - Ambient and Melodic
+use_bpm 60
+
+# Ambient Synth Melody - Section 1
+define :ambient_synth_melody_section1 do
+  use_synth :mod_fm
+  use_synth_defaults amp: 0.3, release: 4, attack: 1, divisor: 2
+  play_pattern_timed [:c2, :e2, :g2, :c3], [2]
+end
+
+# Ambient Synth Melody - Section 2
+define :ambient_synth_melody_section2 do
+  use_synth :mod_fm
+  use_synth_defaults amp: 0.3, release: 4, attack: 1, divisor: 2
+  play_pattern_timed [:d2, :f2, :a2, :d3], [2]
+end
+
+# Follow-up Melody
+define :follow_up_melody do
+  use_synth :blade
+  use_synth_defaults amp: 0.2, release: 3
+  play_pattern_timed [:e2, :g2, :b2, :e3], [2]
+end
+
+# Soft Background Chords
+define :soft_background_chords do
+  use_synth :pad
+  play_chord chord(:c2, :major7), attack: 3, release: 6, amp: 0.2
+  sleep 8
+  play_chord chord(:f2, :major7), attack: 3, release: 6, amp: 0.2
+  sleep 8
+end
+
+# Extended Play
+in_thread do
+  2.times { ambient_synth_melody_section1 }
+  2.times { ambient_synth_melody_section2 }
+  2.times { follow_up_melody }
+end
+
+in_thread do
+  3.times { soft_background_chords }
+end
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+# Yoga and Health Podcast Background Music - Hawaiian Theme
+use_bpm 90
+
+# Ukulele Melody
+define :ukulele_melody do
+  use_synth :pluck
+  play_pattern_timed [:c4, :e4, :g4, :c5, :b4, :g4, :e4, :c4], [0.5], release: 1, amp: 0.5
+end
+
+# Steel Drum Rhythms
+define :steel_drum_rhythm do
+  use_synth :pretty_bell
+  in_thread do
+    play_pattern_timed [:g4, :e4, :c4, :d4], [0.5], release: 0.5, amp: 0.4
+    sleep 8
+  end
+end
+
+# Nature Sounds - Ocean Waves
+define :ocean_waves do
+  sample :ambi_ocean, rate: 1, amp: 0.3, start: 0, finish: 0.5
+  sleep 16
+end
+
+# Play Sections
+in_thread do
+  3.times { ukulele_melody }
+end
+
+in_thread do
+  3.times { steel_drum_rhythm }
+end
+
+2.times { ocean_waves }
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+# Extended Yoga and Health Podcast Background Music - Rainy Happy Day with Bass
+use_bpm 75
+
+# Warm, Comforting Melody
+define :comforting_melody do
+  use_synth :saw
+  play_pattern_timed [:f4, :a4, :c5, :a4, :f4, :d4, :f4], [0.5], amp: 0.5
+end
+
+# Gentle Rain Percussion
+define :rain_percussion do
+  in_thread do
+    with_fx :echo, mix: 0.4, phase: 0.75 do
+      32.times do
+        sample :perc_snap, rate: -1, amp: 0.3
+        sleep 0.5
+      end
+    end
+  end
+end
+
+# Mellow Chords
+define :mellow_chords do
+  use_synth :blade
+  play_chord chord(:f3, :major7), attack: 1, release: 4, amp: 0.4
+  sleep 8
+  play_chord chord(:c3, :major7), attack: 1, release: 4, amp: 0.4
+  sleep 8
+end
+
+# Smooth Bass Line
+define :smooth_bass do
+  use_synth :fm
+  play_pattern_timed [:f2, :c2, :f2, :c2], [2], amp: 0.5
+end
+
+# Extended Play
+in_thread do
+  4.times { comforting_melody }
+end
+
+in_thread do
+  4.times { rain_percussion }
+end
+
+in_thread do
+  4.times { mellow_chords }
+end
+
+in_thread do
+  4.times { smooth_bass }
+end
+
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+
+
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+
+
+
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+
+
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+
+
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+
+
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+
+
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+

@@ -179,3 +179,28 @@ plt.show()
 #         print("✅ All files already match target specs.")
 
 # analyze_and_prompt_downsize_aiff("/Volumes/MUSIC_PROD/STEMS_24_years/vocals")
+
+
+##### extract audio from mp4
+# -----######-----######  AUDIO EXTRACT FROM MP4 (FFMPEG)  -----######-----######-----
+import os
+from subprocess import run
+
+def _vid_1105_basic_GET_audio_extract(input_mp4):
+    """
+    Extracts audio from MP4 using ffmpeg. Outputs a .wav file with same base name.
+    """
+    base, _ = os.path.splitext(input_mp4)
+    output_wav = f"{base}.wav"
+
+    print(f"🎧 Extracting audio from {input_mp4} to {output_wav}")
+    run([
+        "ffmpeg", "-y",  # Overwrite output if exists
+        "-i", input_mp4,
+        "-vn",               # no video
+        "-acodec", "pcm_s16le",  # uncompressed WAV
+        output_wav
+    ])
+    print(f"✅ Done: {output_wav}")
+    return output_wav
+
