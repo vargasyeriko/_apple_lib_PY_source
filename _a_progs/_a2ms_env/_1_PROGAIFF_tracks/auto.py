@@ -1,79 +1,91 @@
-folder_list = ['/Users/yerik/Music/_1_NEW_SOURCE/_2023_this/_23_09_AN_ArtPArk',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2023_this/_23_04_NEW_LODGE',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2023_this/_23_06_ttt_SPKRBOX',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2023_this/_23_12_Tangent_Debout',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2023_this/_23_11_AN_SpotLite',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2023_this/_23_02_AN_LA_VENTANA',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2023_this/_23_10_Detroit_Hou_Tech',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2023_this/_23_04_Foundation_Hotel',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2023_this/_23_08_SL_ACAPELLAS',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2023_this/_23_08_Barefoot',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2023_this/_23_03_Love_Lang',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2023_this/_23_05_AN_bigPINK',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/___YODJ_N0Supervisi0n',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_06_Metroplex_2_and_RNDMgood',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_04_BBssBBssBBs_BandCamp',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_11_11_albm_LordECHO_JAZZ',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/___DJ_friends_Nun',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_07_Puma_BurningMan_indian',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_11_Dinner_Materia_Puma_Jazzy',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_11_11_albm_MimSuleiman_TRIBAL',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_12_fixed_and_added',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_04_NorthL_BadBunny_LatinFast',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_05_MVMNT_block_is_HOT',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_12_Dinner_HipHop_Indian_Puma',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_11_11_N0_Supervisi0n_SPKRbox',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_09_Ghettotech_HiTECH_stu',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_08_Barefoot_and_FREE',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_06_Metroplex_1_and_RNDMgood',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_06_Detroit_Brazil_Funky',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_12_NYE_25',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_09_Eagle_SPKR_Techno',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2024_this/__24_08_Xime_13_Memorial',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/__25_05_Carla_ARABIC_BDAY_LENA',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/__25_04_BP_Rapharazzi_BDAY',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/__25_03_CAPSULE_House_Latin_1',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/__25_04_BCAL_SalsaEstrellasPa',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/__25_04_BCAL_TerapiaLatina',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/__25_05_bc_LowKEY_thirdST_puma_LATIN_4',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/__25_02_DETROIT_PUMA_SPKR',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/__25_02_CDMX_SecretoRoom',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/__25_04_salsa_VENEZUELA',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/__25_04_Zbachata_REMIXES',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/__25_04_BP_ximMAYBDAY_HOUSY_PARTY_LATIN_3',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/__25_04_BP_LATIN_HOUSE_2',
- '/Users/yerik/Music/_1_NEW_SOURCE/_2025_this/__25_05_Movement_DARK_DANCY_LATIN_5']
-# counter = 0
 
-# for path in folder_list:
-#     try:
-#         print(f"\n🔁 Processing: {path}")
-#         my_aiff = path
-#         direc_jpg = "images/"
-#         direc_tables = "tables/"
+####### here TO ADD
+# program that smartly renames , from an inbox folder, ask for the name of the folder , and rename ....
 
-#         # Execute external script
-#         exec(open("run.py", encoding="utf-8").read())
+# -----######-----######-----######-----######-----######-----#
+# FUNCTION: _fs_1704_listsubdirs_GET_list_all
+# -----######-----######-----######-----######-----######-----#
 
-#         # Save first row of df using custom file name format
-#         pkl_name = f"df_{counter:03d}_.pkl"
-#         df.to_pickle(pkl_name)
-#         print(f"✅ Saved: {pkl_name}")
-#         [shutil.rmtree(f, ignore_errors=True) or os.makedirs(f, exist_ok=True) for f in ['images/', 'tables/']]
-#         print('images and tables folders erased')
-#         counter += 1
+import os
+from tqdm import tqdm
 
-#     except Exception as e:
-#         print(f"❌ Error in {path}: {e}")
-#         continue
+def _fs_1704_listsubdirs_GET_list_all(root_folder):
+    """
+    Returns a list of full paths to all immediate subfolders inside the given folder.
+    
+    Parameters:
+        root_folder (str): Path to the root directory
 
+    Returns:
+        List of full paths to subdirectories only
+    """
+    print(f"🔍 Scanning for subfolders in:\n{root_folder}")
+    subfolders = [
+        os.path.join(root_folder, d)
+        for d in os.listdir(root_folder)
+        if os.path.isdir(os.path.join(root_folder, d))
+    ]
+    print(f"✅ Found {len(subfolders)} subfolders.")
+    return subfolders
+folder_list_23 = _fs_1704_listsubdirs_GET_list_all("/Users/yerik/Music/_1_NEW_SOURCE/_2023_this")
+folder_list_24 = _fs_1704_listsubdirs_GET_list_all("/Users/yerik/Music/_1_NEW_SOURCE/_2024_this")
+folder_list_25 = _fs_1704_listsubdirs_GET_list_all("/Users/yerik/Music/_1_NEW_SOURCE/_2025_this")
+
+
+folder_list = folder_list_23 + folder_list_24 + folder_list_25
+#print(folder_list)
+print('\n\n TOTAL FOLDERS IN TRACKS DB ::: ',len(folder_list), '\n')
+### check folders to se ethe ones that already are done 
+# -----######-----###### FILTER FOLDERS: EXCLUDE IF 'dylu' FILES EXIST -----######-----######
+import os
+
+def _filterfolders_1105_excldylu_GET_cleanlist(folder_list):
+    """
+    Filters out folders that contain any file starting with 'dylu'.
+    Removes duplicates while preserving original order.
+    
+    Parameters:
+    - folder_list: list of folder paths (strings)
+    
+    Returns:
+    - list of unique, valid folders excluding any with 'dylu' files
+    """
+    seen = set()
+    clean_folders = []
+
+    for folder in folder_list:
+        if folder in seen:
+            continue
+        seen.add(folder)
+
+        try:
+            if not os.path.isdir(folder):
+                continue
+
+            if any(fname.startswith('dylu') for fname in os.listdir(folder)):
+                continue
+
+            clean_folders.append(folder)
+
+        except Exception as e:
+            print(f"❌ Error in {folder}: {e}")
+            continue
+
+    return clean_folders
+
+
+folder_list = _filterfolders_1105_excldylu_GET_cleanlist(folder_list)
+
+print(folder_list)
+input(f'\n\n TO ANALLIZE songs in folders above total of <<< {len(folder_list)}  >>> Enter to continue ! \n\n')
+#################
 
 import shutil, os
 import pandas as pd
 from pathlib import Path
 
 # ───── VOCALS ─────
-taken_acronym = '2556'
+taken_acronym = input('what is 4 CHARACTER df key word acronym \n\n')
 acronym = 't'
 folder_list = folder_list 
 counter = 0

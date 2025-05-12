@@ -13,7 +13,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 # 
 # CHECK THAT AIFF FILES ARE IN CORRECT FORMAT OR REEFORMAT 
 #
-#results_df = analyze_and_prompt_downsize_aiff(my_aiff)
+results_df = analyze_and_prompt_downsize_aiff(my_aiff)
 #print(results_df.head())
 #input('')
 print('\nALL AIFF in correct format -> if something changes go erase the already downsized\n ')
