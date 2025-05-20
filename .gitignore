@@ -2,3 +2,10 @@
 *.mp4
 *.aiff
 *.DS_Store
+_a_progs/_a2ms_env/_2_PROG_wav_CLEAN_au/ms_2_PODCASTS_CAI/_pod_1_recording/vocals.wav
+*.wav
+*.mp4
+*.aiff
+*.pkl
+*.DS_Store
+*.ipynb_checkpoints/
