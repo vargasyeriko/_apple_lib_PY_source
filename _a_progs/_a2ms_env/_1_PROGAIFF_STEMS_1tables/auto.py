@@ -20,8 +20,6 @@ b_folders = [
 ]
 
 d_folders = [
-    "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/10_percent_silence",
-    "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/20_percent_silence",
     "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/30_percent_silence",
     "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/40_percent_silence",
     "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/50_percent_silence",
