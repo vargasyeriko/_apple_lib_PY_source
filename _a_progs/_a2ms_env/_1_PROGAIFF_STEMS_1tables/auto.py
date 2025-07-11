@@ -1,6 +1,4 @@
 v_folders = [
-    "/Volumes/MUSIC_PROD/STEMS_24_years/v__RNRNexports/10_percent_silence",
-    "/Volumes/MUSIC_PROD/STEMS_24_years/v__RNRNexports/20_percent_silence",
     "/Volumes/MUSIC_PROD/STEMS_24_years/v__RNRNexports/30_percent_silence",
     "/Volumes/MUSIC_PROD/STEMS_24_years/v__RNRNexports/40_percent_silence",
     "/Volumes/MUSIC_PROD/STEMS_24_years/v__RNRNexports/50_percent_silence",
@@ -20,6 +18,8 @@ b_folders = [
 ]
 
 d_folders = [
+    "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/10_percent_silence",
+    "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/20_percent_silence",
     "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/30_percent_silence",
     "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/40_percent_silence",
     "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/50_percent_silence",
@@ -27,7 +27,6 @@ d_folders = [
     "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/70_percent_silence",
     "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/80_percent_silence",
 ]
-
 
 # v_folders = [
 #     "/Users/yerik/Desktop/STEMS/vocals/10_percent_silence",
@@ -93,11 +92,22 @@ final_df.to_pickle(final_path)
 print(f"\n📦 Final vocals DF saved as: {final_path}")
 
 # ───── DELETE TEMP PICKLES ─────
+# for i in range(counter):
+#     f = Path(f"df_{i:03d}_.pkl")
+#     if f.exists():
+#         f.unlink()
+# print("🗑️ Temp pickle files deleted.")
+# ───── MOVE TEMP PICKLES TO _0_temp_tables ─────
+pkl_output_folder = Path("_0_temp_tables")
+pkl_output_folder.mkdir(exist_ok=True)
+
 for i in range(counter):
-    f = Path(f"df_{i:03d}_.pkl")
-    if f.exists():
-        f.unlink()
-print("🗑️ Temp pickle files deleted.")
+    src = Path(f"df_{i:03d}_.pkl")
+    dst = pkl_output_folder / src.name
+    if src.exists():
+        src.rename(dst)
+
+print(f"📂 Chunk pickles moved to: {pkl_output_folder.resolve()}")
 
 # ───── CLEAN MEMORY ─────
 del df
@@ -145,11 +155,22 @@ final_df.to_pickle(final_path)
 print(f"\n📦 Final vocals DF saved as: {final_path}")
 
 # ───── DELETE TEMP PICKLES ─────
+# for i in range(counter):
+#     f = Path(f"df_{i:03d}_.pkl")
+#     if f.exists():
+#         f.unlink()
+# print("🗑️ Temp pickle files deleted.")
+# ───── MOVE TEMP PICKLES TO _0_temp_tables ─────
+pkl_output_folder = Path("_0_temp_tables")
+pkl_output_folder.mkdir(exist_ok=True)
+
 for i in range(counter):
-    f = Path(f"df_{i:03d}_.pkl")
-    if f.exists():
-        f.unlink()
-print("🗑️ Temp pickle files deleted.")
+    src = Path(f"df_{i:03d}_.pkl")
+    dst = pkl_output_folder / src.name
+    if src.exists():
+        src.rename(dst)
+
+print(f"📂 Chunk pickles moved to: {pkl_output_folder.resolve()}")
 
 # ───── CLEAN MEMORY ─────
 del df
@@ -197,11 +218,23 @@ final_df.to_pickle(final_path)
 print(f"\n📦 Final vocals DF saved as: {final_path}")
 
 # ───── DELETE TEMP PICKLES ─────
+# ───── MOVE TEMP PICKLES TO _0_temp_tables ─────
+pkl_output_folder = Path("_0_temp_tables")
+pkl_output_folder.mkdir(exist_ok=True)
+
 for i in range(counter):
-    f = Path(f"df_{i:03d}_.pkl")
-    if f.exists():
-        f.unlink()
-print("🗑️ Temp pickle files deleted.")
+    src = Path(f"df_{i:03d}_.pkl")
+    dst = pkl_output_folder / src.name
+    if src.exists():
+        src.rename(dst)
+
+print(f"📂 Chunk pickles moved to: {pkl_output_folder.resolve()}")
+
+# for i in range(counter):
+#     f = Path(f"df_{i:03d}_.pkl")
+#     if f.exists():
+#         f.unlink()
+# print("🗑️ Temp pickle files deleted.")
 
 # ───── CLEAN MEMORY ─────
 del df
