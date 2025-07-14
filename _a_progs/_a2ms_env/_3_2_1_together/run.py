@@ -1,3 +1,4 @@
+
 exec(open("_all_fns_.py",encoding="utf-8").read())
 #
 #
@@ -45,10 +46,14 @@ print('\nALL AIFF in correct format -> if something changes go erase the already
 ##
 #
 ### -------------------------------------------- >>> FILTER by AIFF
-code = 'all_AIFF'
+direc_jpg = "images/"
+direc_tables = "tables/"
+code = input('What is the acronym (1-2 char) ?')
+silence_id = 1
+acronym = code
 audio_extensions = [ '.AIFF', '.aif', '.aiff'];file_extensions = audio_extensions 
 # 
-my_folder_path = my_aiff
+#my_folder_path = my_aiff
 
 table_name = f"temp_now_{code}.pkl"
 #
@@ -58,7 +63,8 @@ table_name = f"temp_now_{code}.pkl"
 ####
 ### -------------------------------------------- >>> FILTER by AIFF --------- here below ::: audio_extensions
 #
-df, fre_tab = _filefinder_by_EXT_GET_df(my_folder_path, file_extensions = audio_extensions)#file_extensions = None-> 4 none ext
+df, fre_tab = _filefinder_by_EXT_GET_df(df,file_extensions=audio_extensions)
+#file_extensions = None-> 4 none ext
 df = df[~df['Name'].str.startswith('._')].copy();df = df[~df['Name'].str.startswith('.DS')].copy() # omit not wanted
 df = df.rename(columns={'Name': 'temp_id'}).drop(columns=['Size (MB)',])                           # KEEP & RENAME
 df = df[df['Extension'].isin(['.aiff', '.AIFF'])].copy() # KEEP ONLY extension type 
@@ -178,7 +184,7 @@ df = _genre_0204_id3_filefallback_GET_df_with_genre(df, 'genre', 'GNkw', 'RMkw')
 print('DONE with getting 4_genre')
 print(df['genre_file'].value_counts())
 df['genre'] = df['genre'].str.replace('_', ' ').str.replace(r'^[^a-zA-Z]+', '', regex=True)
-df['genre'] = genre_rn 
+df['genre'] = input('what is the genre of those ?? ')
 
 ####
 ##
@@ -194,7 +200,7 @@ df['genre'] = genre_rn
 df = _relyear_0204_id3_filefallback_GET_df_with_rel_year(df, 'rel_year', 'YRkw', 'PYkw')
 print('DONE with getting 5_release_year')
 print(df['rel_year_file'].value_counts())
-df['rel_year'] = rel_yr_rn
+df['rel_year'] = input('What is the release year ?')
 ####
 ##
 #

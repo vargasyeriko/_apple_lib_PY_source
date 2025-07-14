@@ -643,3 +643,93 @@ def _aiff_1310_lowvolsplit_GET_chunks_df(df):
         os.remove(path_in)
 
     return pd.DataFrame({'Path': chunk_paths})
+
+
+############# get BEAT samples CAI 3
+def _bpm_1407_i2_GET_dominantbpm_durmin_smart(df):
+    tqdm.pandas(desc="🌊 Processing Tracks")
+
+    def analyze_bpm(file_path):
+        try:
+            if not os.path.isfile(file_path):
+                raise FileNotFoundError(f"Missing: {file_path}")
+            
+            y, sr = librosa.load(file_path, sr=None)
+            duration_sec = len(y) / sr
+            dur_min = round(float(duration_sec / 60), 2)
+
+            # Step 1: Try full BPM
+            full_bpm, _ = librosa.beat.beat_track(y=y, sr=sr)
+            if full_bpm > 30:
+                full_bpm = float(full_bpm)
+                return {
+                    'dominant_bpm': round(full_bpm, 1),
+                    'mean_bpm': round(full_bpm, 1),
+                    'std_bpm': 0.0,
+                    'min_bpm': round(full_bpm, 1),
+                    'max_bpm': round(full_bpm, 1),
+                    'variation_percentage': 0.0,
+                    'bpm_consistency': 1.0,
+                    'dur_min': dur_min
+                }
+
+            # Step 2: Windowed fallback
+            bpm_values = []
+            window_sec = 10.0
+            hop_sec = 5.0
+
+            if duration_sec < window_sec:
+                raise ValueError("Too short for windowed BPM")
+
+            exclude_start = int(0.1 * duration_sec * sr)
+            exclude_end = int(0.9 * duration_sec * sr)
+            y_trimmed = y[exclude_start:exclude_end]
+
+            hop = int(hop_sec * sr)
+            win = int(window_sec * sr)
+
+            for i in range(0, len(y_trimmed) - win + 1, hop):
+                window = y_trimmed[i:i+win]
+                tempo, _ = librosa.beat.beat_track(y=window, sr=sr)
+                if tempo > 30:
+                    bpm_values.append(float(tempo))
+
+            if not bpm_values:
+                raise ValueError("No valid BPMs")
+
+            bpm_array = np.array(bpm_values)
+            dom_bpm = round(float(mode(bpm_array, keepdims=True)[0][0]), 1)
+            mean_bpm = round(float(np.mean(bpm_array)), 1)
+            std_bpm = round(float(np.std(bpm_array)), 1)
+            min_bpm = round(float(np.min(bpm_array)), 1)
+            max_bpm = round(float(np.max(bpm_array)), 1)
+            variation = round(100 * std_bpm / mean_bpm, 1) if mean_bpm > 0 else 0.0
+            consistency = round(1 - (std_bpm / max_bpm), 2) if max_bpm > 0 else 0.0
+
+            return {
+                'dominant_bpm': dom_bpm,
+                'mean_bpm': mean_bpm,
+                'std_bpm': std_bpm,
+                'min_bpm': min_bpm,
+                'max_bpm': max_bpm,
+                'variation_percentage': variation,
+                'bpm_consistency': consistency,
+                'dur_min': dur_min
+            }
+
+        except Exception as e:
+            warnings.warn(f"⚠️ {os.path.basename(file_path)} failed: {e}")
+            return {
+                'dominant_bpm': 0.0,
+                'mean_bpm': 0.0,
+                'std_bpm': 0.0,
+                'min_bpm': 0.0,
+                'max_bpm': 0.0,
+                'variation_percentage': 0.0,
+                'bpm_consistency': 0.0,
+                'dur_min': 0.0
+            }
+
+    results = df['Path'].progress_apply(analyze_bpm)
+    bpm_df = pd.DataFrame(list(results))
+    return pd.concat([df.reset_index(drop=True), bpm_df], axis=1)
