@@ -546,90 +546,410 @@ def _convert_1307_dfwav_GET_clean_aiff_with_tags(df):
 #   _aiff_1310_lowvolsplit_GET_chunks_df                       #
 # ----------------------------######----------------------------#
 
+# import os
+# import numpy as np
+# import librosa
+# import soundfile as sf
+# from mutagen.aiff import AIFF
+# from mutagen.id3 import ID3, ID3NoHeaderError
+# import pandas as pd
+# from tqdm import tqdm
+
+# def _aiff_1310_lowvolsplit_GET_chunks_df(df):
+#     chunk_paths = []
+
+#     for path_in in tqdm(df['Path_aiff'], desc='🔍 Low-Vol Split 1–2min'):
+#         y, sr = librosa.load(path_in, sr=None, mono=True)
+#         dur_sec = librosa.get_duration(y=y, sr=sr)
+
+#         if dur_sec <= 60:
+#             chunk_paths.append(path_in)
+#             continue
+
+#         # Parameters
+#         min_len = 60  # seconds
+#         max_len = 120
+#         step = int(sr * 10)  # move in 10s blocks
+#         window = int(sr * 2)  # dip-check within ±2 sec
+#         quiet_cut_margin = 0.9  # percentile cutoff for silence
+
+#         rms = librosa.feature.rms(y=y, frame_length=2048, hop_length=512)[0]
+#         rms = librosa.util.normalize(rms)
+
+#         time_cursor = 0
+#         cuts = [0]
+
+#         while time_cursor + min_len * sr < len(y):
+#             chunk_start = time_cursor
+#             chunk_end = min(time_cursor + max_len * sr, len(y))
+
+#             # Search window for quietest RMS point between min-max length
+#             min_sample = chunk_start + int(min_len * sr)
+#             max_sample = int(chunk_end)
+
+#             if max_sample <= min_sample:
+#                 break
+
+#             search_rms = rms[int(min_sample / 512):int(max_sample / 512)]
+#             if len(search_rms) == 0:
+#                 break
+
+#             # Find lowest RMS point
+#             min_idx = np.argmin(search_rms)
+#             cut_sample = int(min_sample + min_idx * 512)
+
+#             # Only accept cut if it's in bottom X% volume
+#             if search_rms[min_idx] <= np.percentile(rms, quiet_cut_margin * 100):
+#                 cuts.append(cut_sample)
+#                 time_cursor = cut_sample
+#             else:
+#                 # No acceptable low point found, extend time cursor to retry
+#                 time_cursor += int(sr * 10)
+
+#         cuts.append(len(y))
+
+#         # Build chunks
+#         segments = []
+#         for i in range(len(cuts)-1):
+#             start = cuts[i]
+#             end = cuts[i+1]
+#             seg = y[start:end]
+#             if (end - start) >= min_len * sr and (end - start) <= max_len * sr:
+#                 segments.append(seg)
+
+#         # Metadata
+#         id3_data = None
+#         try:
+#             id3_data = ID3(path_in)
+#         except ID3NoHeaderError:
+#             pass
+
+#         base = os.path.splitext(os.path.basename(path_in))[0]
+#         folder = os.path.dirname(path_in)
+
+#         for i, ch in enumerate(segments):
+#             out_path = os.path.join(folder, f"{base}__chopNO{i+1}.aiff")
+#             sf.write(out_path, ch, sr, subtype='PCM_16')
+#             if id3_data:
+#                 try:
+#                     new_file = AIFF(out_path)
+#                     new_file.tags = id3_data
+#                     new_file.save()
+#                 except:
+#                     pass
+#             chunk_paths.append(out_path)
+
+#         # Delete original
+#         os.remove(path_in)
+
+#     return pd.DataFrame({'Path': chunk_paths})
+
+# # -----######-----###### SMART VOICE SPLIT FOR LOW VOL AIFF -----######-----###### #
+# import os
+# import numpy as np
+# import pandas as pd
+# import librosa
+# import soundfile as sf
+# from mutagen.aiff import AIFF
+# from mutagen.id3 import ID3, ID3NoHeaderError
+# from tqdm import tqdm
+
+# def _aiff_1310_lowvolsplit_GET_chunks_df(df):
+#     chunk_records = []
+
+#     for path_in in tqdm(df['Path_aiff'], desc='🔍 Smart Splitting AIFF'):
+#         y, sr = librosa.load(path_in, sr=None, mono=True)
+#         dur_sec = librosa.get_duration(y=y, sr=sr)
+
+#         if dur_sec <= 60:
+#             chunk_records.append({
+#                 'Path': path_in,
+#                 'dur_sec': round(dur_sec, 2),
+#                 'avg_rms': float(np.mean(librosa.feature.rms(y=y)[0]))
+#             })
+#             continue
+
+#         # PARAMETERS
+#         min_len_sec = 60
+#         max_len_sec = 120
+#         min_force_len_sec = 10
+#         max_force_len_sec = 40
+#         search_step = int(sr * 10)     # Move every 10s
+#         rms = librosa.feature.rms(y=y, frame_length=2048, hop_length=512)[0]
+#         rms = librosa.util.normalize(rms)
+#         rms_threshold = np.percentile(rms, 15)  # 15% percentile for quiet threshold
+
+#         time_cursor = 0
+#         cuts = [0]
+
+#         while time_cursor + min_len_sec * sr < len(y):
+#             chunk_start = time_cursor
+#             chunk_end = min(time_cursor + max_len_sec * sr, len(y))
+
+#             min_sample = chunk_start + int(min_len_sec * sr)
+#             max_sample = int(chunk_end)
+#             if max_sample <= min_sample:
+#                 break
+
+#             # Narrow down to lowest RMS point
+#             search_rms = rms[int(min_sample / 512):int(max_sample / 512)]
+#             if len(search_rms) == 0:
+#                 break
+
+#             min_idx = np.argmin(search_rms)
+#             cut_sample = int(min_sample + min_idx * 512)
+
+#             # Accept cut if below RMS threshold
+#             if search_rms[min_idx] <= rms_threshold:
+#                 cuts.append(cut_sample)
+#                 time_cursor = cut_sample
+#             else:
+#                 time_cursor += search_step
+
+#         cuts.append(len(y))
+
+#         # Grab ID3 metadata
+#         try:
+#             id3_data = ID3(path_in)
+#         except ID3NoHeaderError:
+#             id3_data = None
+
+#         base = os.path.splitext(os.path.basename(path_in))[0]
+#         folder = os.path.dirname(path_in)
+
+#         for i in range(len(cuts) - 1):
+#             start = cuts[i]
+#             end = cuts[i + 1]
+#             seg = y[start:end]
+#             seg_dur_sec = round((end - start) / sr, 2)
+#             seg_rms = float(np.mean(librosa.feature.rms(y=seg)[0]))
+
+#             # Enforce smart rules
+#             if seg_dur_sec < min_len_sec:
+#                 if seg_dur_sec >= min_force_len_sec and seg_dur_sec <= max_force_len_sec and seg_rms <= rms_threshold:
+#                     pass  # Accept shorter quiet chunk
+#                 else:
+#                     continue
+#             elif seg_dur_sec > max_len_sec:
+#                 continue
+
+#             # Export
+#             out_name = f"{base}__chopNO{i+1}__{int(seg_dur_sec)}s.aiff"
+#             out_path = os.path.join(folder, out_name)
+#             sf.write(out_path, seg, sr, subtype='PCM_16')
+
+#             if id3_data:
+#                 try:
+#                     new_file = AIFF(out_path)
+#                     new_file.tags = id3_data
+#                     new_file.save()
+#                 except:
+#                     pass
+
+#             chunk_records.append({
+#                 'Path': out_path,
+#                 'dur_sec': seg_dur_sec,
+#                 'avg_rms': seg_rms
+#             })
+
+#         os.remove(path_in)
+
+#     df_chunks = pd.DataFrame(chunk_records)
+#     return df_chunks
+# -----######-----###### SMART VOICE SPLIT FOR LOW VOL AIFF -----######-----###### #
+# ================================================================#
+# 0_FNS :  -----######-----###### SMART VOICE SPLIT FOR LOW VOL AIFF (HIGH SENSITIVITY) -----######-----###### #
+# ================================================================#
+
+# -----######-----###### SPLIT: VOICE & LOW-VOLUME CHUNKS (MANUAL DELETE FRIENDLY) -----######-----###### #
+# -----######-----###### SMART CHOP with LOW-VOL + MAX CHUNK CONTROL -----######-----###### #
+# -----######-----###### NATURAL CHOPS with MAX CHUNK CAP (~20) -----######-----###### #
+# import os
+# import numpy as np
+# import pandas as pd
+# import librosa
+# import soundfile as sf
+# from mutagen.aiff import AIFF
+# from mutagen.id3 import ID3, ID3NoHeaderError
+# from tqdm import tqdm
+
+# def _aiff_1310_lowvolsplit_GET_chunks_df(df, rms_db_threshold=-35, max_chunks=20):
+#     chunk_records = []
+
+#     for path_in in tqdm(df['Path_aiff'], desc='🔍 Smart Chunking'):
+#         y, sr = librosa.load(path_in, sr=None, mono=True)
+#         dur_sec = librosa.get_duration(y=y, sr=sr)
+
+#         if dur_sec <= 60:
+#             chunk_records.append({'Path': path_in, 'dur_sec': dur_sec, 'avg_rms_db': -20})
+#             continue
+
+#         # RMS + classification
+#         frame_len, hop_len = 2048, 512
+#         rms = librosa.feature.rms(y=y, frame_length=frame_len, hop_length=hop_len)[0]
+#         rms_db = librosa.amplitude_to_db(rms, ref=np.max)
+#         times = librosa.frames_to_samples(np.arange(len(rms)), hop_length=hop_len)
+
+#         # Segment based on quiet/loud blocks
+#         is_quiet = rms_db < rms_db_threshold
+#         segs = []
+#         curr_state = is_quiet[0]
+#         seg_start = 0
+#         for i in range(1, len(is_quiet)):
+#             if is_quiet[i] != curr_state:
+#                 seg_end = times[i]
+#                 segs.append((seg_start, seg_end, curr_state))
+#                 seg_start = seg_end
+#                 curr_state = is_quiet[i]
+#         segs.append((seg_start, len(y), curr_state))
+
+#         # Remove too-short
+#         segs = [s for s in segs if (s[1] - s[0]) / sr >= 4]
+
+#         # Merge smallest until under max_chunks
+#         while len(segs) > max_chunks:
+#             i = np.argmin([(b - a) for a, b, _ in segs])
+#             if i == 0:
+#                 merged = (segs[0][0], segs[1][1], segs[1][2])
+#                 segs = [merged] + segs[2:]
+#             else:
+#                 merged = (segs[i-1][0], segs[i][1], segs[i][2])
+#                 segs = segs[:i-1] + [merged] + segs[i+1:]
+
+#         # Get ID3
+#         try:
+#             id3_data = ID3(path_in)
+#         except ID3NoHeaderError:
+#             id3_data = None
+
+#         base = os.path.splitext(os.path.basename(path_in))[0]
+#         folder = os.path.dirname(path_in)
+
+#         for idx, (start, end, is_quiet_seg) in enumerate(segs):
+#             seg = y[start:end]
+#             seg_dur = round(librosa.get_duration(y=seg, sr=sr), 2)
+#             if seg_dur < 4:
+#                 continue
+
+#             seg_rms_db = float(np.mean(librosa.amplitude_to_db(librosa.feature.rms(y=seg)[0], ref=np.max)))
+#             status = "quiet" if is_quiet_seg else "voice"
+#             len_tag = f"{int(seg_dur):03d}s"
+#             out_name = f"{base}__{status}_chopNO{idx+1}__len{len_tag}.aiff"
+#             out_path = os.path.join(folder, out_name)
+#             sf.write(out_path, seg, sr, subtype='PCM_16')
+
+#             if id3_data:
+#                 try:
+#                     new_file = AIFF(out_path)
+#                     new_file.tags = id3_data
+#                     new_file.save()
+#                 except:
+#                     pass
+
+#             chunk_records.append({
+#                 'Path': out_path,
+#                 'dur_sec': seg_dur,
+#                 'avg_rms_db': seg_rms_db
+#             })
+
+#         os.remove(path_in)
+
+#     return pd.DataFrame(chunk_records)
+
+# -----######-----###### FINAL WITH CUSTOM RENAME FORMAT -----######-----###### #
+# -----######-----###### FINAL: NATURAL CHOPS WITH FULL COVERAGE + CUSTOM NAME -----######-----###### #
+# -----######-----###### FINAL: FULL AUDIO COVERAGE + CUSTOM NAME + NO SKIPPED SECONDS -----######-----###### #
 import os
 import numpy as np
+import pandas as pd
 import librosa
 import soundfile as sf
 from mutagen.aiff import AIFF
 from mutagen.id3 import ID3, ID3NoHeaderError
-import pandas as pd
 from tqdm import tqdm
 
-def _aiff_1310_lowvolsplit_GET_chunks_df(df):
-    chunk_paths = []
+def _aiff_1310_lowvolsplit_GET_chunks_df(df, rms_db_threshold=-35, max_chunks=20):
+    chunk_records = []
 
-    for path_in in tqdm(df['Path_aiff'], desc='🔍 Low-Vol Split 1–2min'):
+    for path_in in tqdm(df['Path_aiff'], desc='🔍 Smart Chunking'):
         y, sr = librosa.load(path_in, sr=None, mono=True)
         dur_sec = librosa.get_duration(y=y, sr=sr)
 
         if dur_sec <= 60:
-            chunk_paths.append(path_in)
+            chunk_records.append({'Path': path_in, 'dur_sec': dur_sec, 'avg_rms_db': -20})
             continue
 
-        # Parameters
-        min_len = 60  # seconds
-        max_len = 120
-        step = int(sr * 10)  # move in 10s blocks
-        window = int(sr * 2)  # dip-check within ±2 sec
-        quiet_cut_margin = 0.9  # percentile cutoff for silence
+        # ---- RMS + classification ----
+        frame_len, hop_len = 2048, 512
+        rms = librosa.feature.rms(y=y, frame_length=frame_len, hop_length=hop_len)[0]
+        rms_db = librosa.amplitude_to_db(rms, ref=np.max)
+        times = librosa.frames_to_samples(np.arange(len(rms)), hop_length=hop_len)
 
-        rms = librosa.feature.rms(y=y, frame_length=2048, hop_length=512)[0]
-        rms = librosa.util.normalize(rms)
+        # ---- Segment into loud/quiet ----
+        is_quiet = rms_db < rms_db_threshold
+        segs = []
+        curr_state = is_quiet[0]
+        seg_start = 0
+        for i in range(1, len(is_quiet)):
+            if is_quiet[i] != curr_state:
+                seg_end = times[i]
+                segs.append((seg_start, seg_end, curr_state))
+                seg_start = seg_end
+                curr_state = is_quiet[i]
+        segs.append((seg_start, len(y), curr_state))
 
-        time_cursor = 0
-        cuts = [0]
-
-        while time_cursor + min_len * sr < len(y):
-            chunk_start = time_cursor
-            chunk_end = min(time_cursor + max_len * sr, len(y))
-
-            # Search window for quietest RMS point between min-max length
-            min_sample = chunk_start + int(min_len * sr)
-            max_sample = int(chunk_end)
-
-            if max_sample <= min_sample:
-                break
-
-            search_rms = rms[int(min_sample / 512):int(max_sample / 512)]
-            if len(search_rms) == 0:
-                break
-
-            # Find lowest RMS point
-            min_idx = np.argmin(search_rms)
-            cut_sample = int(min_sample + min_idx * 512)
-
-            # Only accept cut if it's in bottom X% volume
-            if search_rms[min_idx] <= np.percentile(rms, quiet_cut_margin * 100):
-                cuts.append(cut_sample)
-                time_cursor = cut_sample
+        # ---- Merge until under max_chunks ----
+        while len(segs) > max_chunks:
+            i = np.argmin([(b - a) for a, b, _ in segs])
+            if i == 0:
+                merged = (segs[0][0], segs[1][1], segs[1][2])
+                segs = [merged] + segs[2:]
             else:
-                # No acceptable low point found, extend time cursor to retry
-                time_cursor += int(sr * 10)
+                merged = (segs[i-1][0], segs[i][1], segs[i][2])
+                segs = segs[:i-1] + [merged] + segs[i+1:]
 
-        cuts.append(len(y))
-
-        # Build chunks
-        segments = []
-        for i in range(len(cuts)-1):
-            start = cuts[i]
-            end = cuts[i+1]
-            seg = y[start:end]
-            if (end - start) >= min_len * sr and (end - start) <= max_len * sr:
-                segments.append(seg)
-
-        # Metadata
-        id3_data = None
+        # ---- Read ID3 metadata ----
         try:
             id3_data = ID3(path_in)
         except ID3NoHeaderError:
-            pass
+            id3_data = None
 
         base = os.path.splitext(os.path.basename(path_in))[0]
         folder = os.path.dirname(path_in)
 
-        for i, ch in enumerate(segments):
-            out_path = os.path.join(folder, f"{base}__chopNO{i+1}.aiff")
-            sf.write(out_path, ch, sr, subtype='PCM_16')
+        # ---- Split into prefix/middle ----
+        if "RELEASE" in base:
+            prefix, suffix = base.split("RELEASE", 1)
+            prefix = prefix + "RELEASE"
+            middle = suffix.strip("_")
+        else:
+            prefix = base
+            middle = "NA"
+
+        chunk_idx = 1
+        total_cut_sec = 0
+
+        for start, end, is_quiet_seg in segs:
+            seg = y[start:end]
+            seg_dur = round(librosa.get_duration(y=seg, sr=sr), 2)
+
+            # Never skip: label short instead
+            if seg_dur < 12:
+                status = "short"
+            else:
+                status = "quiet" if is_quiet_seg else "voice"
+
+            seg_rms_vals = librosa.feature.rms(y=seg)[0]
+            seg_rms_db = librosa.amplitude_to_db(seg_rms_vals, ref=np.max).mean().item()
+
+            chunk_tag = f"CH{chunk_idx}"
+            dur_tag = f"{int(seg_dur)}sec"
+            out_name = f"{prefix}-{chunk_tag}-{dur_tag}__{middle}_TYPE_{status}.aiff"
+            out_path = os.path.join(folder, out_name)
+
+            # Save
+            sf.write(out_path, seg, sr, subtype='PCM_16')
+
             if id3_data:
                 try:
                     new_file = AIFF(out_path)
@@ -637,12 +957,25 @@ def _aiff_1310_lowvolsplit_GET_chunks_df(df):
                     new_file.save()
                 except:
                     pass
-            chunk_paths.append(out_path)
 
-        # Delete original
+            chunk_records.append({
+                'Path': out_path,
+                'dur_sec': seg_dur,
+                'avg_rms_db': seg_rms_db
+            })
+
+            total_cut_sec += seg_dur
+            chunk_idx += 1
+
+        # ✅ Final check: match original duration
+        if abs(total_cut_sec - dur_sec) > 0.1:
+            print(f"⚠️ {base} duration mismatch! Chunks = {round(total_cut_sec,2)}s vs original = {round(dur_sec,2)}s ❌")
+        else:
+            print(f"✅ {base} OK: Chunks = {round(total_cut_sec,2)}s match original = {round(dur_sec,2)}s ✔️")
+
         os.remove(path_in)
 
-    return pd.DataFrame({'Path': chunk_paths})
+    return pd.DataFrame(chunk_records)
 
 
 ############# get BEAT samples CAI 3

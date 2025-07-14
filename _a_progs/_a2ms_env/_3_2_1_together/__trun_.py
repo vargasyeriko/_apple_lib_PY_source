@@ -15,8 +15,13 @@ df = _convert_1307_dfwav_GET_clean_aiff_with_tags(df)
 input('ABOUT TO CHOP')
 # modes :low medium high
 #df_chunks = _aiff_1310_splitter_GET_smart_chunks_dfchunks(df, mode="high")
-df_chunks = _aiff_1310_lowvolsplit_GET_chunks_df(df)
+#df_chunks = _aiff_1310_lowvolsplit_GET_chunks_df(df)
+#!#!#!#!#! RUNNING STATEMENTS #!#!#!#!#!
+df_chunks = _aiff_1310_lowvolsplit_GET_chunks_df(df, rms_db_threshold=-35, max_chunks=20)
+
 df = df_chunks.copy()
+#!#!#!#!#! RUNNING STATEMENTS #!#!#!#!#!
+
 
 ######################### cai_3 >>> CHOP BEAT GRID needed 
 #
