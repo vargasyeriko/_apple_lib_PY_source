@@ -18,11 +18,6 @@
 # ]
 
 d_folders = [
-    "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/10_percent_silence",
-    "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/20_percent_silence",
-    "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/30_percent_silence",
-    "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/40_percent_silence",
-    "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/50_percent_silence",
     "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/60_percent_silence",
     "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/70_percent_silence",
     "/Volumes/MUSIC_PROD/STEMS_24_years/d__RNRNexports/80_percent_silence",
@@ -48,7 +43,7 @@ d_folders = [
 # ]
 
 
-global_counter = 0
+global_counter = 5
 
 # import shutil, os
 # import pandas as pd
