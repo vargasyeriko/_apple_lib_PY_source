@@ -387,6 +387,7 @@ def _video_story_mp4(input_folder, duration=60, x_offset_percent=0, custom = 'n'
 ##### we need to resize 
 
 # -----######-----###### FULL MP4 → MOV → MERGE + MP3 EXTRACTOR -----######-----###### #
+# -----######-----###### SMART MERGE + BETTER QUALITY MP3 EXTRACTOR -----######-----###### #
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from pathlib import Path
 from tqdm import tqdm
@@ -413,23 +414,22 @@ def _video_together_and_mp3(folder_path):
 
     input("\n❓ Is this the correct progression? (Press ENTER to continue or Ctrl+C to abort): ")
 
-    # Step 3: Compress each .mp4 → .mov @ 25% quality
+    # Step 3: Compress each .mp4 → .mov @ 75% resolution w/ CRF
     temp_movs = []
     for vid in tqdm(video_files, desc="🎬 Compressing MP4 to MOV"):
         clip = VideoFileClip(str(vid))
-        new_size = (int(clip.w * 0.5), int(clip.h * 0.5))
+        new_size = (int(clip.w * 0.75), int(clip.h * 0.75))  # ✅ improved resolution
         clip_resized = clip.resize(newsize=new_size)
 
-        out_path = vid.with_suffix("").with_name(vid.stem + "_25pct.mov")
+        out_path = vid.with_suffix("").with_name(vid.stem + "_crf23.mov")
         clip_resized.write_videofile(
             str(out_path),
             codec='libx264',
             audio_codec='aac',
-            bitrate="500k",
             preset='ultrafast',
-            ffmpeg_params=["-movflags", "faststart"],
+            ffmpeg_params=["-crf", "23", "-movflags", "faststart"],  # ✅ smarter quality
             threads=4,
-            logger=None  # ✅ disable progress bar/logs
+            logger=None
         )
         temp_movs.append(out_path)
         clip.close()
@@ -443,11 +443,10 @@ def _video_together_and_mp3(folder_path):
         str(final_video_path),
         codec='libx264',
         audio_codec='aac',
-        bitrate="500k",
         preset='ultrafast',
-        ffmpeg_params=["-movflags", "faststart"],
+        ffmpeg_params=["-crf", "23", "-movflags", "faststart"],
         threads=4,
-        logger=None  # ✅ disable progress bar/logs
+        logger=None
     )
     final_clip.close()
     [clip.close() for clip in clips]
@@ -463,8 +462,8 @@ def _video_together_and_mp3(folder_path):
     final_audio = VideoFileClip(str(final_video_path)).audio
     final_audio.write_audiofile(
         str(final_audio_path),
-        bitrate="128k",  # 💡 slightly faster + lighter for upload
-        logger=None      # ✅ skip audio bar
+        bitrate="128k",  # 💡 faster + still decent quality for IG
+        logger=None
     )
     final_audio.close()
 
