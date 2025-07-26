@@ -388,6 +388,7 @@ def _video_story_mp4(input_folder, duration=60, x_offset_percent=0, custom = 'n'
 
 # -----######-----###### FULL MP4 → MOV → MERGE + MP3 EXTRACTOR -----######-----###### #
 # -----######-----###### SMART MERGE + BETTER QUALITY MP3 EXTRACTOR -----######-----###### #
+# -----######-----###### MERGE + SIZE-CONTROLLED EXPORT + MP3 EXTRACTOR -----######-----###### #
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from pathlib import Path
 from tqdm import tqdm
@@ -414,20 +415,21 @@ def _video_together_and_mp3(folder_path):
 
     input("\n❓ Is this the correct progression? (Press ENTER to continue or Ctrl+C to abort): ")
 
-    # Step 3: Compress each .mp4 → .mov @ 75% resolution w/ CRF
+    # Step 3: Compress each .mp4 → .mov @ 65% resolution, 1500k bitrate
     temp_movs = []
     for vid in tqdm(video_files, desc="🎬 Compressing MP4 to MOV"):
         clip = VideoFileClip(str(vid))
-        new_size = (int(clip.w * 0.75), int(clip.h * 0.75))  # ✅ improved resolution
+        new_size = (int(clip.w * 0.65), int(clip.h * 0.65))  # 🔧 tighter resize
         clip_resized = clip.resize(newsize=new_size)
 
-        out_path = vid.with_suffix("").with_name(vid.stem + "_crf23.mov")
+        out_path = vid.with_suffix("").with_name(vid.stem + "_compressed.mov")
         clip_resized.write_videofile(
             str(out_path),
             codec='libx264',
             audio_codec='aac',
+            bitrate="1500k",  # ✅ sweet spot size/quality
             preset='ultrafast',
-            ffmpeg_params=["-crf", "23", "-movflags", "faststart"],  # ✅ smarter quality
+            ffmpeg_params=["-movflags", "faststart"],
             threads=4,
             logger=None
         )
@@ -443,8 +445,9 @@ def _video_together_and_mp3(folder_path):
         str(final_video_path),
         codec='libx264',
         audio_codec='aac',
+        bitrate="1500k",
         preset='ultrafast',
-        ffmpeg_params=["-crf", "23", "-movflags", "faststart"],
+        ffmpeg_params=["-movflags", "faststart"],
         threads=4,
         logger=None
     )
@@ -462,7 +465,7 @@ def _video_together_and_mp3(folder_path):
     final_audio = VideoFileClip(str(final_video_path)).audio
     final_audio.write_audiofile(
         str(final_audio_path),
-        bitrate="128k",  # 💡 faster + still decent quality for IG
+        bitrate="128k",
         logger=None
     )
     final_audio.close()
