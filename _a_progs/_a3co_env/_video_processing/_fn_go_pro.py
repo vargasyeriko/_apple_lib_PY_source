@@ -428,7 +428,7 @@ def _video_together_and_mp3(folder_path):
             codec='libx264',
             audio_codec='aac',
             bitrate="1500k",  # ✅ sweet spot size/quality
-            preset='fast',
+            preset='ultrafast',
             ffmpeg_params=["-movflags", "faststart"],
             threads=4,
             logger=None
@@ -445,8 +445,8 @@ def _video_together_and_mp3(folder_path):
         str(final_video_path),
         codec='libx264',
         audio_codec='aac',
-        bitrate="500k",
-        preset='medium',
+        bitrate="1500k",
+        preset='ultrafast',
         ffmpeg_params=["-movflags", "faststart"],
         threads=4,
         logger=None
