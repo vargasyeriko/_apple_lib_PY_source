@@ -1,151 +1,241 @@
 # Auto-cleaned track lists
-
-list_1 = [
-    {
-        "title": "Apricots",
-        "artist": "Bicep",
-        "remixer": "Sub Focus",
-        "bpm": 174
-    },
-    {
-        "title": "I Wish",
-        "artist": "Infected Mushroom",
-        "remixer": "Aura Vortex",
-        "bpm": 145
-    },
-    {
-        "title": "Firestarter",
-        "artist": "The Prodigy",
-        "remixer": "Andy C",
-        "bpm": 174
-    },
-    {
-        "title": "My Cosmos Is Mine",
-        "artist": "Depeche Mode",
-        "remixer": "ANNA",
-        "bpm": 130
-    },
-    {
-        "title": "Go",
-        "artist": "Moby",
-        "remixer": "Anfisa Letyago",
-        "bpm": 130
-    },
-    {
-        "title": "Innerbloom",
-        "artist": "RÜFÜS DU SOL",
-        "remixer": "What So Not",
-        "bpm": 138
-    },
-    {
-        "title": "Zombie",
-        "artist": "The Cranberries",
-        "remixer": "Ranji & WHITENO1SE",
-        "bpm": 145
-    },
-    {
-        "title": "Nothing Left to Lose",
-        "artist": "Everything But The Girl",
-        "remixer": "Four Tet",
-        "bpm": 130
-    },
-    {
-        "title": "Koto",
-        "artist": "Orkidz",
-        "remixer": "",
-        "bpm": 86
-    },
-    {
-        "title": "Borojo",
-        "artist": "Mixwell & Yemanjo",
-        "remixer": "Lagartijeando",
-        "bpm": 90
-    },
-    {
-        "title": "Dreta",
-        "artist": "EraNota",
-        "remixer": "",
-        "bpm": 100
-    },
-    {
-        "title": "Chimera",
-        "artist": "Faders & Blazy",
-        "remixer": "",
-        "bpm": 142
-    },
-    {
-        "title": "Come With Us",
-        "artist": "Ace Ventura & Zen Mechanics",
-        "remixer": "Asgard",
-        "bpm": 142
-    },
-    {
-        "title": "Oasis",
-        "artist": "Samra",
-        "remixer": "",
-        "bpm": 140
-    },
-    {
-        "title": "Equilibrio",
-        "artist": "Lagartijeando",
-        "remixer": "",
-        "bpm": 80
-    },
-    {
-        "title": "Dreams Within a Dream",
-        "artist": "Desert Dwellers",
-        "remixer": "Symbolico",
-        "bpm": 100
-    },
-    {
-        "title": "Homeworld",
-        "artist": "Nanosphere",
-        "remixer": "Desert Dwellers",
-        "bpm": 135
-    },
-    {
-        "title": "Path of Illumination",
-        "artist": "Poranguí & Liquid Bloom",
-        "remixer": "",
-        "bpm": 85
-    },
-    {
-        "title": "Ayurveda",
-        "artist": "Beatfarmer & Clement",
-        "remixer": "",
-        "bpm": 90
-    },
-    {
-        "title": "San Pedro Rising",
-        "artist": "Kaya Project",
-        "remixer": "SOOHAN",
-        "bpm": 100
-    },
-    {
-        "title": "Glue",
-        "artist": "Bicep",
-        "remixer": "Jon Hopkins",
-        "bpm": 128
-    },
-    {
-        "title": "Insomnia",
-        "artist": "Faithless",
-        "remixer": "Maceo Plex",
-        "bpm": 125
-    },
-    {
-        "title": "Love Tonight",
-        "artist": "Shouse",
-        "remixer": "Vintage Culture & Kiko Franco",
-        "bpm": 124
-    },
-    {
-        "title": "The Age Of Love",
-        "artist": "Charlotte de Witte & Enrico Sangiuliano",
-        "remixer": "",
-        "bpm": 142
-    }
-]
+list_1 = ['']
+# list_1= [
+#     {
+#         "title": "Psicodelica Con Arpa",
+#         "artist": "DJ Nirso",
+#         "remixer": 0,
+#         "bpm": None
+#     },
+#     {
+#         "title": "El Sol Y La Luna (Original Mix)",
+#         "artist": "Mielycumbia",
+#         "remixer": 0,
+#         "bpm": None
+#     },
+#     {
+#         "title": "Cómo Te Voy A Olvidar",
+#         "artist": "Ángeles Azules",
+#         "remixer": "Lascivio Bohemia Remix",
+#         "bpm": None
+#     },
+#     {
+#         "title": "Don Marcial",
+#         "artist": "Dengue Dengue Dengue!",
+#         "remixer": 0,
+#         "bpm": None
+#     },
+#     {
+#         "title": "Mini Conga",
+#         "artist": "El Buga",
+#         "remixer": 0,
+#         "bpm": None
+#     },
+#     {
+#         "title": "Alpha & Omega",
+#         "artist": "Dengue Dengue Dengue!",
+#         "remixer": 0,
+#         "bpm": None
+#     },
+#     {
+#         "title": "Grito Socorro",
+#         "artist": "Ultima Esuna",
+#         "remixer": 0,
+#         "bpm": None
+#     },
+#     {
+#         "title": "Barrabass",
+#         "artist": "Dengue Dengue Dengue!",
+#         "remixer": 0,
+#         "bpm": None
+#     },
+#     {
+#         "title": "Rumba Chonta",
+#         "artist": "Grupo Bahía",
+#         "remixer": "Klik & Frik Remix",
+#         "bpm": None
+#     },
+#     {
+#         "title": "Mucho Hijueputa",
+#         "artist": "Biomigrant, Los Hermanos Balanta",
+#         "remixer": 0,
+#         "bpm": None
+#     },
+#     {
+#         "title": "Mbaya Ritmos - Asali",
+#         "artist": "SHANGO RECORDS",
+#         "remixer": 0,
+#         "bpm": None
+#     },
+#     {
+#         "title": "En El Camino Para Zaña",
+#         "artist": "pigmalião",
+#         "remixer": 0,
+#         "bpm": None
+#     },
+#     {
+#         "title": "Mosaico De Bunde",
+#         "artist": "Mr. Toé, Grupo Bahía",
+#         "remixer": 0,
+#         "bpm": None
+#     },
+#     {
+#         "title": "Dejame Gozar La Vida",
+#         "artist": "Andres Landero",
+#         "remixer": "El Búho Edit",
+#         "bpm": None
+#     },
+#     {
+#         "title": "Alborada",
+#         "artist": "Alborada ft Anicca",
+#         "remixer": 0,
+#         "bpm": None
+#     },
+#     {
+#         "title": "Apricots",
+#         "artist": "Bicep",
+#         "remixer": "Sub Focus",
+#         "bpm": 174
+#     },
+#     {
+#         "title": "I Wish",
+#         "artist": "Infected Mushroom",
+#         "remixer": "Aura Vortex",
+#         "bpm": 145
+#     },
+#     {
+#         "title": "Firestarter",
+#         "artist": "The Prodigy",
+#         "remixer": "Andy C",
+#         "bpm": 174
+#     },
+#     {
+#         "title": "My Cosmos Is Mine",
+#         "artist": "Depeche Mode",
+#         "remixer": "ANNA",
+#         "bpm": 130
+#     },
+#     {
+#         "title": "Go",
+#         "artist": "Moby",
+#         "remixer": "Anfisa Letyago",
+#         "bpm": 130
+#     },
+#     {
+#         "title": "Innerbloom",
+#         "artist": "RÜFÜS DU SOL",
+#         "remixer": "What So Not",
+#         "bpm": 138
+#     },
+#     {
+#         "title": "Zombie",
+#         "artist": "The Cranberries",
+#         "remixer": "Ranji & WHITENO1SE",
+#         "bpm": 145
+#     },
+#     {
+#         "title": "Nothing Left to Lose",
+#         "artist": "Everything But The Girl",
+#         "remixer": "Four Tet",
+#         "bpm": 130
+#     },
+#     {
+#         "title": "Koto",
+#         "artist": "Orkidz",
+#         "remixer": "",
+#         "bpm": 86
+#     },
+#     {
+#         "title": "Borojo",
+#         "artist": "Mixwell & Yemanjo",
+#         "remixer": "Lagartijeando",
+#         "bpm": 90
+#     },
+#     {
+#         "title": "Dreta",
+#         "artist": "EraNota",
+#         "remixer": "",
+#         "bpm": 100
+#     },
+#     {
+#         "title": "Chimera",
+#         "artist": "Faders & Blazy",
+#         "remixer": "",
+#         "bpm": 142
+#     },
+#     {
+#         "title": "Come With Us",
+#         "artist": "Ace Ventura & Zen Mechanics",
+#         "remixer": "Asgard",
+#         "bpm": 142
+#     },
+#     {
+#         "title": "Oasis",
+#         "artist": "Samra",
+#         "remixer": "",
+#         "bpm": 140
+#     },
+#     {
+#         "title": "Equilibrio",
+#         "artist": "Lagartijeando",
+#         "remixer": "",
+#         "bpm": 80
+#     },
+#     {
+#         "title": "Dreams Within a Dream",
+#         "artist": "Desert Dwellers",
+#         "remixer": "Symbolico",
+#         "bpm": 100
+#     },
+#     {
+#         "title": "Homeworld",
+#         "artist": "Nanosphere",
+#         "remixer": "Desert Dwellers",
+#         "bpm": 135
+#     },
+#     {
+#         "title": "Path of Illumination",
+#         "artist": "Poranguí & Liquid Bloom",
+#         "remixer": "",
+#         "bpm": 85
+#     },
+#     {
+#         "title": "Ayurveda",
+#         "artist": "Beatfarmer & Clement",
+#         "remixer": "",
+#         "bpm": 90
+#     },
+#     {
+#         "title": "San Pedro Rising",
+#         "artist": "Kaya Project",
+#         "remixer": "SOOHAN",
+#         "bpm": 100
+#     },
+#     {
+#         "title": "Glue",
+#         "artist": "Bicep",
+#         "remixer": "Jon Hopkins",
+#         "bpm": 128
+#     },
+#     {
+#         "title": "Insomnia",
+#         "artist": "Faithless",
+#         "remixer": "Maceo Plex",
+#         "bpm": 125
+#     },
+#     {
+#         "title": "Love Tonight",
+#         "artist": "Shouse",
+#         "remixer": "Vintage Culture & Kiko Franco",
+#         "bpm": 124
+#     },
+#     {
+#         "title": "The Age Of Love",
+#         "artist": "Charlotte de Witte & Enrico Sangiuliano",
+#         "remixer": "",
+#         "bpm": 142
+#     }
+# ]
 
 list_2 = [
     {
