@@ -2,6 +2,96 @@
 
 list_1 = [
     {
+        "title": "Psicodelica Con Arpa",
+        "artist": "DJ Nirso",
+        "remixer": 0,
+        "bpm": null
+    },
+    {
+        "title": "El Sol Y La Luna (Original Mix)",
+        "artist": "Mielycumbia",
+        "remixer": 0,
+        "bpm": null
+    },
+    {
+        "title": "Cómo Te Voy A Olvidar",
+        "artist": "Ángeles Azules",
+        "remixer": "Lascivio Bohemia Remix",
+        "bpm": null
+    },
+    {
+        "title": "Don Marcial",
+        "artist": "Dengue Dengue Dengue!",
+        "remixer": 0,
+        "bpm": null
+    },
+    {
+        "title": "Mini Conga",
+        "artist": "El Buga",
+        "remixer": 0,
+        "bpm": null
+    },
+    {
+        "title": "Alpha & Omega",
+        "artist": "Dengue Dengue Dengue!",
+        "remixer": 0,
+        "bpm": null
+    },
+    {
+        "title": "Grito Socorro",
+        "artist": "Ultima Esuna",
+        "remixer": 0,
+        "bpm": null
+    },
+    {
+        "title": "Barrabass",
+        "artist": "Dengue Dengue Dengue!",
+        "remixer": 0,
+        "bpm": null
+    },
+    {
+        "title": "Rumba Chonta",
+        "artist": "Grupo Bahía",
+        "remixer": "Klik & Frik Remix",
+        "bpm": null
+    },
+    {
+        "title": "Mucho Hijueputa",
+        "artist": "Biomigrant, Los Hermanos Balanta",
+        "remixer": 0,
+        "bpm": null
+    },
+    {
+        "title": "Mbaya Ritmos - Asali",
+        "artist": "SHANGO RECORDS",
+        "remixer": 0,
+        "bpm": null
+    },
+    {
+        "title": "En El Camino Para Zaña",
+        "artist": "pigmalião",
+        "remixer": 0,
+        "bpm": null
+    },
+    {
+        "title": "Mosaico De Bunde",
+        "artist": "Mr. Toé, Grupo Bahía",
+        "remixer": 0,
+        "bpm": null
+    },
+    {
+        "title": "Dejame Gozar La Vida",
+        "artist": "Andres Landero",
+        "remixer": "El Búho Edit",
+        "bpm": null
+    },
+    {
+        "title": "Alborada",
+        "artist": "Alborada ft Anicca",
+        "remixer": 0,
+        "bpm": null
+    },
+    {
         "title": "Apricots",
         "artist": "Bicep",
         "remixer": "Sub Focus",
