@@ -821,3 +821,231 @@ def _video_together_and_mp3(folder_path):
                 list_path.unlink()
         except Exception:
             pass
+
+        
+############### videos fix to stereo and normalize 
+
+# -----######-----###### MONO & TRUE PEAK NORMALIZE MP4 AUDIO IN FOLDER -----######-----###### #
+import subprocess
+from pathlib import Path
+from tqdm import tqdm
+
+def _video_0108_vmono_peaknorm_GET_cleanfolder(folder_path):
+    folder = Path(folder_path)
+    if not folder.exists():
+        print("❌ Folder not found.")
+        return
+
+    video_paths = [p for p in folder.glob("*.mp4") if not p.name.startswith('._')]
+
+    for vid_path in tqdm(video_paths, desc="🎬 Normalizing Videos"):
+        temp_mono_norm = vid_path.with_name("temp_audio_fixed.wav")
+        temp_final = vid_path.with_name(f"temp_{vid_path.name}")
+
+        # 1. Extract and convert audio to mono WAV, normalize to 0.0 dBFS peak using volume filter
+        cmd1 = [
+            "ffmpeg", "-i", str(vid_path),
+            "-vn", "-ac", "1", "-ar", "44100",  # mono, 44.1kHz
+            "-filter:a", "volumedetect", "-f", "null", "-"
+        ]
+
+        # Run volumedetect to measure current peak
+        result = subprocess.run(cmd1, stderr=subprocess.PIPE, stdout=subprocess.DEVNULL, text=True)
+        lines = result.stderr.split('\n')
+        peak_db = None
+        for line in lines:
+            if "max_volume:" in line:
+                try:
+                    peak_db = float(line.split("max_volume:")[1].strip().replace(" dB", ""))
+                except:
+                    pass
+
+        if peak_db is None:
+            print(f"⚠️ Skipped {vid_path.name}: couldn't detect peak.")
+            continue
+
+        gain_db = -peak_db  # amount needed to reach 0 dBFS
+        gain_db = round(gain_db, 2)
+
+        # 2. Apply gain to normalize
+        cmd2 = [
+            "ffmpeg", "-i", str(vid_path),
+            "-vn", "-ac", "1", "-ar", "44100",
+            "-af", f"volume={gain_db}dB",
+            "-y", str(temp_mono_norm)
+        ]
+
+        # 3. Replace video audio
+        cmd3 = [
+            "ffmpeg", "-i", str(vid_path), "-i", str(temp_mono_norm),
+            "-map", "0:v:0", "-map", "1:a:0",
+            "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+            "-y", str(temp_final)
+        ]
+
+        try:
+            subprocess.run(cmd2, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+            subprocess.run(cmd3, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+            vid_path.unlink()
+            temp_final.rename(vid_path)
+        except subprocess.CalledProcessError as e:
+            print(f"⚠️ Error with {vid_path.name}: {e}")
+        finally:
+            if temp_mono_norm.exists():
+                temp_mono_norm.unlink()
+
+
+# Example GET mp3 
+
+# -----######-----###### CORE IMPORTABLE FUNCTION (Final MP3 extractor) -----######-----###### #
+import os, sys, shlex, subprocess, time
+from pathlib import Path
+from datetime import datetime
+from tqdm import tqdm
+
+def _video_1508_finalvid_GET_mp3(
+    vids_input,
+    mp3_bitrate_k=320,     # 320 kbps CBR for “decent” upload quality
+    sr=44100,              # DJ/stream-friendly sample rate
+    channels=2,            # stereo
+    choose="newest"        # if multiple __final_vid_* files: "newest" | "largest"
+):
+    """
+    Find a file starting with '__final_vid_' (case-sensitive prefix) in vids_input (non-recursive),
+    extract full audio to MP3 (libmp3lame, CBR), and name output as the folder basename.
+    Returns the output MP3 path.
+    """
+
+    folder = Path(vids_input).expanduser().resolve()
+    if not folder.exists() or not folder.is_dir():
+        raise FileNotFoundError(f"Folder not found: {folder}")
+
+    # --- ffmpeg availability check
+    try:
+        subprocess.run(["ffmpeg", "-version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+    except Exception:
+        raise RuntimeError(
+            "ffmpeg not found. On macOS: `brew install ffmpeg`. Make sure it's on your PATH."
+        )
+
+    # --- gather candidates (__final_vid_*.mp4, case-insensitive extension)
+    cands = []
+    for p in folder.iterdir():
+        if p.is_file() and p.name.startswith("__final_vid_") and p.suffix.lower() == ".mp4":
+            cands.append(p)
+
+    if not cands:
+        raise FileNotFoundError("No file found with prefix '__final_vid_' and extension .mp4 in the folder.")
+
+    # --- choose candidate
+    if len(cands) == 1:
+        src = cands[0]
+    else:
+        if choose == "largest":
+            src = max(cands, key=lambda x: x.stat().st_size)
+        else:
+            src = max(cands, key=lambda x: x.stat().st_mtime)
+
+    # --- output name from folder basename
+    base_name = folder.name.strip()
+    safe_base = "".join(ch if ch not in r'\/:*?"<>|' else "_" for ch in base_name)
+    out_mp3 = folder / f"{safe_base}.mp3"
+
+    # don't overwrite; bump version if needed
+    if out_mp3.exists():
+        i = 2
+        while True:
+            candidate = folder / f"{safe_base}_v{i}.mp3"
+            if not candidate.exists():
+                out_mp3 = candidate
+                break
+            i += 1
+
+    # --- probe duration for progress
+    def _probe_duration_seconds(path):
+        cmd = ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+               "-of", "default=nw=1:nk=1", str(path)]
+        try:
+            r = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            return float(r.stdout.strip())
+        except Exception:
+            return None
+
+    duration = _probe_duration_seconds(src)
+
+    # --- build ffmpeg command
+    # CBR 320 kbps, high quality resampling, copy no video
+    # Force ID3v2 for better tag compatibility
+    meta_title = base_name
+    meta_date = datetime.now().strftime("%Y-%m-%d")
+
+    cmd = [
+        "ffmpeg",
+        "-y",                     # we already version; keep -y for safety
+        "-i", str(src),
+        "-vn",
+        "-ac", str(channels),
+        "-ar", str(sr),
+        "-c:a", "libmp3lame",
+        "-b:a", f"{mp3_bitrate_k}k",
+        "-write_id3v2", "1",
+        "-id3v2_version", "3",
+        "-metadata", f"title={meta_title}",
+        "-metadata", f"comment=extracted from {src.name} on {meta_date}",
+        # live progress
+        "-progress", "pipe:1",
+        "-nostats",
+        str(out_mp3)
+    ]
+
+    # --- run with TQM progress
+    # If duration unknown, show a simple spinner-like bar
+    if duration and duration > 0:
+        pbar = tqdm(total=int(duration), unit="s", desc="TQM • Extracting MP3", leave=False)
+    else:
+        pbar = tqdm(total=100, desc="TQM • Extracting MP3", leave=False)  # fallback mode
+
+    try:
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+        last_sec = 0
+        fallback_ticks = 0
+
+        for line in proc.stdout:
+            line = line.strip()
+            if duration and line.startswith("out_time_ms="):
+                try:
+                    out_ms = int(line.split("=", 1)[1])
+                    out_sec = min(int(out_ms // 1_000_000), int(duration))
+                    if out_sec > last_sec:
+                        pbar.update(out_sec - last_sec)
+                        last_sec = out_sec
+                except Exception:
+                    pass
+            elif not duration:
+                # fallback: gently tick up to 95 while ffmpeg runs
+                if fallback_ticks < 95:
+                    pbar.update(1)
+                    fallback_ticks += 1
+
+        proc.wait()
+        if proc.returncode != 0:
+            raise RuntimeError("ffmpeg failed during MP3 extraction.")
+
+        # finish progress
+        if duration:
+            pbar.n = pbar.total
+            pbar.refresh()
+        else:
+            pbar.n = 100
+            pbar.refresh()
+
+    finally:
+        pbar.close()
+
+    # quick verify: check that output was created and is non-trivial
+    if not out_mp3.exists() or out_mp3.stat().st_size < 1024 * 64:
+        raise RuntimeError("Output MP3 seems invalid or too small.")
+
+    print(f"✅ MP3 created: {out_mp3}")
+    return str(out_mp3)
+
