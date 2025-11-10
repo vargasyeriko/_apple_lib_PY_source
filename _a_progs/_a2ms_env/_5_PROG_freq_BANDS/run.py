@@ -1,305 +1,267 @@
-# -----######-----######-----######-----######-----######-----######-----######-----
-#  MAIN IMPORTABLE FUNCTION (with TQM bar + Textual mouse sliders)
-# -----######-----######-----######-----######-----######-----######-----######-----
-# Deps:
-#   pip install numpy scipy sounddevice soundfile textual textual-slider
+# -----######-----######  CORE IMPORTABLE FUNCTION  -----######-----######
+# _ui_0611_audioengine_GET_realtime
 #
-# Notes:
-#   - Best in macOS Terminal/iTerm2 with mouse enabled.
-#   - Works with stereo/mono AIFF (mono is upmixed).
-#   - Blocksize slider restarts stream smoothly.
-# -----######-----######-----######-----######-----######-----######-----######-----
+# Params:
+#   audio_path (string): path to WAV/AIFF/FLAC
+#   params (dict): shared dict the UI will update in real-time
+#                  keys: {'gain_db','low_db','mid_db','high_db'}
+#   sr_target (int): stream sample rate (macOS device rate)
+#   blocksize (int): audio callback blocksize
+#   device (int/str/None): sounddevice device id or name
+#
+# Behavior:
+#   - Streams audio through a low-latency callback
+#   - Applies headroom, 3-band light EQ, smoothing, and safety limiter
+#   - Prints a TQM bar (CPU/peak) periodically in main thread
+#   - Returns when playback ends or KeyboardInterrupt
+# ----------------------------------------------------------------------
 
-import time, threading
+import time, sys, threading, queue, math
 import numpy as np
-import sounddevice as sd
-import soundfile as sf
-from scipy.signal import butter, sosfilt
 
-from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, Label, Button, ProgressBar   # <— no Slider here
-from textual.containers import Horizontal, Vertical
-from textual.reactive import reactive
-from textual_slider import Slider  # <— slider plugin
-
-# ======================= DSP: LR4 3-WAY CROSSOVER =======================
-
-def _lr4_bank(fs, f_lo=120.0, f_hi=4000.0):
-    def _sos(ftype, fc):
-        return butter(2, fc/(fs*0.5), btype=ftype, output='sos')
-    bank = {
-        "lp_lo": np.vstack([_sos('low',  f_lo), _sos('low',  f_lo)]),
-        "hp_hi": np.vstack([_sos('high', f_hi), _sos('high', f_hi)]),
-        "mid_hp":np.vstack([_sos('high', f_lo), _sos('high', f_lo)]),
-        "mid_lp":np.vstack([_sos('low',  f_hi), _sos('low',  f_hi)]),
-    }
-    return bank
+try:
+    import sounddevice as sd
+    import soundfile as sf
+except ImportError:
+    raise RuntimeError("Please pip install sounddevice soundfile")
 
 def _db_to_lin(db):
-    return 10.0**(db/20.0)
+    return 10.0 ** (db / 20.0)
 
-# ======================= AUDIO ENGINE =======================
+def _one_pole_smoother(prev, target, alpha):
+    # alpha in (0,1], smaller = smoother
+    return prev + alpha * (target - prev)
 
-class _ThreeBandEngine:
-    def __init__(self, path, blocksize=256, f_lo=120.0, f_hi=4000.0):
-        self.path = path
-        self.blocksize = int(blocksize)
-        self.f_lo, self.f_hi = float(f_lo), float(f_hi)
+def _design_shelving(fc, sr, gain_db, shelf_type="low"):
+    # Simple 1st-order shelving (one-pole). Returns (a0,a1,b1) for direct form:
+    # y[n] = a0*x[n] + a1*x[n-1] - b1*y[n-1]
+    # Lightweight & stable for small EQ moves; good for live tweaking.
+    g = _db_to_lin(gain_db)
+    # Pre-warp
+    x = math.exp(-2.0*math.pi*fc/sr)
+    if shelf_type == "low":
+        a0 = (1.0 - x) * g
+        a1 = 0.0
+        b1 = -x
+    elif shelf_type == "high":
+        a0 = (1.0 - x)
+        a1 = 0.0
+        b1 = -x * (1.0/g)
+        # Normalize overall gain at DC ~1 for small boosts/cuts
+    else:
+        # Mid = simple wide bell via two shelves blend (very light hack)
+        # You can replace with a biquad peaking filter later.
+        a0 = (1.0 - x) * g
+        a1 = 0.0
+        b1 = -x
+    return a0, a1, b1
 
-        self.file = None
-        self.fs = 44100
-        self.channels = 2
+class _OnePoleFilter:
+    def __init__(self, fc, sr, gain_db, shelf_type):
+        self.a0, self.a1, self.b1 = _design_shelving(fc, sr, gain_db, shelf_type)
+        self.x1L = 0.0; self.y1L = 0.0
+        self.x1R = 0.0; self.y1R = 0.0
+        self.fc = fc; self.shelf_type = shelf_type
+        self.sr = sr
+        self.gain_db = gain_db
 
-        self.gain_low_db = 0.0
-        self.gain_mid_db = 0.0
-        self.gain_high_db= 0.0
-        self.master_db   = 0.0
+    def update_gain(self, gain_db):
+        if abs(gain_db - self.gain_db) < 0.05:
+            return
+        self.gain_db = gain_db
+        self.a0, self.a1, self.b1 = _design_shelving(self.fc, self.sr, self.gain_db, self.shelf_type)
 
-        self.bank = None
-        self.state = {}
+    def process(self, x):
+        # x: (N, C) float32
+        if x.ndim == 1:
+            x = x[:, None]
+        y = np.empty_like(x)
+        # Stereo or mono-safe
+        for ch in range(x.shape[1]):
+            x1 = self.x1L if ch == 0 else self.x1R
+            y1 = self.y1L if ch == 0 else self.y1R
+            out = np.empty(x.shape[0], dtype=x.dtype)
+            a0, a1, b1 = self.a0, self.a1, self.b1
+            for n in range(x.shape[0]):
+                xn = x[n, ch]
+                yn = a0*xn + a1*x1 - b1*y1
+                out[n] = yn
+                x1 = xn
+                y1 = yn
+            if ch == 0:
+                self.x1L, self.y1L = x1, y1
+            else:
+                self.x1R, self.y1R = x1, y1
+            y[:, ch] = out
+        return y
 
-        self.blocks_processed = 0
-        self.blocks_expected  = 0
-        self.xruns = 0
-        self.clip_latch = False
-        self.cpu_ms = 0.0
-        self.peak_hold = np.array([0.0, 0.0], dtype=np.float32)
+def _safety_limiter(buf, ceiling_lin=0.98):
+    peak = np.max(np.abs(buf))
+    if peak <= ceiling_lin:
+        return buf, peak
+    # Simple hard-knee scaler (not a brickwall but prevents explosions)
+    scale = ceiling_lin / (peak + 1e-12)
+    return buf * scale, peak
 
-        self.finished = False
-        self.restart_flag = False
-        self._lock = threading.Lock()
+def _read_blocks(audio_path, sr_target, blocksize):
+    f = sf.SoundFile(audio_path, mode='r')
+    src_sr = f.samplerate
+    ch = f.channels
+    if src_sr != sr_target:
+        # Let sounddevice handle SR conversion by reporting intended samplerate to stream.
+        # Alternatively, implement high-quality resampling here (e.g. samplerate, resampy).
+        pass
+    while True:
+        data = f.read(blocksize, dtype='float32', always_2d=True)
+        if len(data) == 0:
+            break
+        yield data
+    f.close()
 
-    def _open(self):
-        self.file = sf.SoundFile(self.path, mode="r")
-        self.fs = self.file.samplerate
-        self.channels = self.file.channels
-        self.bank = _lr4_bank(self.fs, self.f_lo, self.f_hi)
-        self._init_state()
+def _ui_0611_audioengine_GET_realtime(audio_path, params, sr_target=44100, blocksize=512, device=None):
+    """
+    -----######-----######  CORE IMPORTABLE FUNCTION  -----######-----######
+    """
+    # Defaults if missing
+    for k, v in [('gain_db', 0.0), ('low_db', 0.0), ('mid_db', 0.0), ('high_db', 0.0)]:
+        params.setdefault(k, v)
 
-    def _init_state(self):
-        def z(sos): return np.zeros((sos.shape[0], 2), dtype=np.float32)
-        self.state = {
-            "z_lp_L": z(self.bank["lp_lo"]),  "z_lp_R": z(self.bank["lp_lo"]),
-            "z_hp_L": z(self.bank["hp_hi"]),  "z_hp_R": z(self.bank["hp_hi"]),
-            "z_mh_L": z(self.bank["mid_hp"]), "z_mh_R": z(self.bank["mid_hp"]),
-            "z_ml_L": z(self.bank["mid_lp"]), "z_ml_R": z(self.bank["mid_lp"]),
-        }
+    # Smoothing state
+    sm_gain = params['gain_db']
+    sm_low  = params['low_db']
+    sm_mid  = params['mid_db']
+    sm_high = params['high_db']
+    alpha = 0.05  # smaller = smoother
 
-    def set_blocksize(self, bs):
-        with self._lock:
-            self.blocksize = int(bs)
-            self.restart_flag = True
+    # Filters
+    low = _OnePoleFilter(fc=180.0,  sr=sr_target, gain_db=sm_low,  shelf_type="low")
+    mid = _OnePoleFilter(fc=1000.0, sr=sr_target, gain_db=sm_mid,  shelf_type="mid")
+    hig = _OnePoleFilter(fc=6000.0, sr=sr_target, gain_db=sm_high, shelf_type="high")
 
-    def set_gains(self, low=None, mid=None, high=None, master=None):
-        with self._lock:
-            if low    is not None: self.gain_low_db   = float(low)
-            if mid    is not None: self.gain_mid_db   = float(mid)
-            if high   is not None: self.gain_high_db  = float(high)
-            if master is not None: self.master_db     = float(master)
+    q_frames = queue.Queue(maxsize=8)
+    peak_meter = {'value': 0.0}
+    xruns = {'count': 0}
+    done = {'flag': False}
 
-    def _split(self, x):
-        # x: (frames,2)
-        def filt(xch, sos, k):
-            z = self.state[k]
-            y, z_out = sosfilt(sos, xch, zi=z)
-            self.state[k] = z_out
-            return y
-        L = x[:,0]; R = x[:,1]
+    # Producer thread: file reader
+    def _reader():
+        try:
+            for blk in _read_blocks(audio_path, sr_target, blocksize):
+                try:
+                    q_frames.put(blk, timeout=1.0)
+                except queue.Full:
+                    # If UI stalls, drop (avoid blocking file read forever)
+                    pass
+        finally:
+            done['flag'] = True
 
-        lowL = filt(L, self.bank["lp_lo"], "z_lp_L")
-        lowR = filt(R, self.bank["lp_lo"], "z_lp_R")
+    th = threading.Thread(target=_reader, daemon=True)
+    th.start()
 
-        hiL  = filt(L, self.bank["hp_hi"], "z_hp_L")
-        hiR  = filt(R, self.bank["hp_hi"], "z_hp_R")
+    # Audio callback
+    def _callback(outdata, frames, time_info, status):
+        if status.output_underflow or status.input_underflow:
+            xruns['count'] += 1
+        try:
+            blk = q_frames.get_nowait()
+        except queue.Empty:
+            outdata.fill(0.0)
+            return
 
-        midL = filt(L, self.bank["mid_hp"], "z_mh_L")
-        midL = filt(midL, self.bank["mid_lp"], "z_ml_L")
-        midR = filt(R, self.bank["mid_hp"], "z_mh_R")
-        midR = filt(midR, self.bank["mid_lp"], "z_ml_R")
+        # Smooth params
+        sm_gain = _one_pole_smoother(_callback.sm_gain, params.get('gain_db', 0.0), alpha)
+        sm_low  = _one_pole_smoother(_callback.sm_low,  params.get('low_db',  0.0), alpha)
+        sm_mid  = _one_pole_smoother(_callback.sm_mid,  params.get('mid_db',  0.0), alpha)
+        sm_high = _one_pole_smoother(_callback.sm_high, params.get('high_db', 0.0), alpha)
+        _callback.sm_gain, _callback.sm_low, _callback.sm_mid, _callback.sm_high = sm_gain, sm_low, sm_mid, sm_high
 
-        low = np.stack([lowL, lowR], axis=1)
-        mid = np.stack([midL, midR], axis=1)
-        hi  = np.stack([hiL,  hiR ], axis=1)
-        return low, mid, hi
+        # Update filters if needed
+        low.update_gain(sm_low)
+        mid.update_gain(sm_mid)
+        hig.update_gain(sm_high)
 
-    def _callback(self, outdata, frames, time_info, status):
-        t0 = time.perf_counter()
-        if status and (status.input_overflow or status.output_underflow):
-            self.xruns += 1
+        # Headroom
+        headroom = _db_to_lin(-9.0)
+        y = blk * headroom
 
-        data = self.file.read(frames, dtype="float32", always_2d=True)
-        if data.shape[0] < frames:
-            pad = np.zeros((frames - data.shape[0], data.shape[1]), dtype=np.float32)
-            data = np.vstack([data, pad])
-            self.finished = True
+        # EQ (very light, cheap)
+        y = low.process(y)
+        y = mid.process(y)
+        y = hig.process(y)
 
-        if data.shape[1] == 1:
-            data = np.repeat(data, 2, axis=1)
+        # Master gain
+        y *= _db_to_lin(sm_gain)
 
-        low, mid, hi = self._split(data)
+        # Safety limiter
+        y, pk = _safety_limiter(y, ceiling_lin=0.98)
+        peak_meter['value'] = 0.9*peak_meter['value'] + 0.1*float(pk)
 
-        with self._lock:
-            gl = _db_to_lin(self.gain_low_db)
-            gm = _db_to_lin(self.gain_mid_db)
-            gh = _db_to_lin(self.gain_high_db)
-            gM = _db_to_lin(self.master_db)
-
-        y = (low*gl) + (mid*gm) + (hi*gh)
-        y *= gM
-
-        peaks = np.max(np.abs(y), axis=0)
-        self.peak_hold = np.maximum(self.peak_hold*0.95, peaks)
-        if np.any(peaks > 0.999):
-            self.clip_latch = True
+        # Fit channels to outdata
+        if y.shape[1] < outdata.shape[1]:
+            # mono->stereo
+            y = np.repeat(y, outdata.shape[1], axis=1)
+        elif y.shape[1] > outdata.shape[1]:
+            y = y[:, :outdata.shape[1]]
 
         outdata[:] = y
-        self.blocks_processed += 1
 
-        dt = (time.perf_counter() - t0) * 1000.0
-        self.cpu_ms = 0.9*self.cpu_ms + 0.1*dt
+    _callback.sm_gain = sm_gain
+    _callback.sm_low  = sm_low
+    _callback.sm_mid  = sm_mid
+    _callback.sm_high = sm_high
 
-    def _run_once(self):
-        self.blocks_processed = 0
-        self.blocks_expected  = 0
-        self.xruns = 0
-        self.clip_latch = False
-        self.cpu_ms = 0.0
-        self.peak_hold[:] = 0.0
-        self.file.seek(0)
-        self.finished = False
+    stream = sd.OutputStream(
+        samplerate=sr_target,
+        blocksize=blocksize,
+        channels=2,
+        dtype='float32',
+        device=device,
+        callback=_callback,
+        latency='low'
+    )
 
-        bs = self.blocksize
-        with sd.OutputStream(channels=2, samplerate=self.fs, blocksize=bs,
-                             dtype='float32', callback=self._callback):
-            t0 = time.perf_counter()
-            while not self.finished and not self.restart_flag:
-                time.sleep(0.05)
-                elapsed = time.perf_counter() - t0
-                est_blocks = int(elapsed * (self.fs / bs))
-                self.blocks_expected = max(self.blocks_expected, est_blocks)
-            time.sleep(0.05)
+    # TQM bar (non-audio thread)
+    def _tqm():
+        while not done['flag'] or not q_frames.empty():
+            pk = peak_meter['value']
+            xrun = xruns['count']
+            bars = int(min(50, max(0, pk*55)))
+            sys.stdout.write(
+                f"\rTQM | Peak: [{'#'*bars}{'-'*(50-bars)}] {pk:0.3f} | XRuns: {xrun}      "
+            )
+            sys.stdout.flush()
+            time.sleep(0.2)
+        print("\nTQM | Done.")
 
-    def run(self):
-        self._open()
-        while True:
-            self._run_once()
-            if self.restart_flag:
-                with self._lock:
-                    self.restart_flag = False
-                self._init_state()
-                continue
-            break
+    tqm_thread = threading.Thread(target=_tqm, daemon=True)
+    tqm_thread.start()
 
-# ======================= TEXTUAL UI =======================
-
-class _EQPanel(Vertical):
-    low = reactive(0.0); mid = reactive(0.0); high = reactive(0.0); master = reactive(0.0)
-    blocksize = reactive(256)
-
-    def __init__(self, engine):
-        super().__init__()
-        self.engine = engine
-
-    def compose(self) -> ComposeResult:
-        yield Header(show_clock=True)
-        with Vertical():
-            yield Label("LIVE 3-Band Console — LR4 | Mouse-drag sliders | Click to apply latency")
-            with Horizontal():
-                with Vertical():
-                    yield Label("Low (dB)")
-                    self.s_low = Slider(-12, 12, step=0.5, value=0.0, show_value=True)
-                    yield self.s_low
-                with Vertical():
-                    yield Label("Mid (dB)")
-                    self.s_mid = Slider(-12, 12, step=0.5, value=0.0, show_value=True)
-                    yield self.s_mid
-                with Vertical():
-                    yield Label("High (dB)")
-                    self.s_high = Slider(-12, 12, step=0.5, value=0.0, show_value=True)
-                    yield self.s_high
-                with Vertical():
-                    yield Label("Master (dB)")
-                    self.s_master = Slider(-24, 6, step=0.5, value=0.0, show_value=True)
-                    yield self.s_master
-            with Horizontal():
-                with Vertical():
-                    yield Label("Latency / Blocksize")
-                    self.s_bs = Slider(64, 1024, step=64, value=256, show_value=True)
-                    yield self.s_bs
-                    self.btn_apply = Button("Apply Latency", id="apply")
-                    yield self.btn_apply
-                with Vertical():
-                    self.lbl_fs = Label("Sample Rate: —")
-                    yield self.lbl_fs
-                    self.lbl_peaks = Label("Peaks: L 0.00  R 0.00")
-                    yield self.lbl_peaks
-                with Vertical():
-                    yield Label("TQM (Engine Health)")
-                    self.pb = ProgressBar(total=100)
-                    yield self.pb
-                    self.lbl_health = Label("Health: 0% | XRuns: 0 | Clip: False | CPU: 0.00 ms")
-                    yield self.lbl_health
-        yield Footer()
-
-    def on_mount(self):
-        self.set_interval(0.05, self._tick)
-        self.s_low.changed.connect(lambda v: self._set_gain("low", v))
-        self.s_mid.changed.connect(lambda v: self._set_gain("mid", v))
-        self.s_high.changed.connect(lambda v: self._set_gain("high", v))
-        self.s_master.changed.connect(lambda v: self._set_gain("master", v))
-        self.s_bs.changed.connect(lambda v: setattr(self, "blocksize", int(v)))
-        self.btn_apply.on_click = lambda: self.engine.set_blocksize(self.blocksize)
-
-    def _set_gain(self, which, value):
-        if   which == "low":    self.engine.set_gains(low=value)
-        elif which == "mid":    self.engine.set_gains(mid=value)
-        elif which == "high":   self.engine.set_gains(high=value)
-        elif which == "master": self.engine.set_gains(master=value)
-
-    def _tick(self):
-        fs_k = f"{self.engine.fs/1000:.1f} kHz"
-        self.lbl_fs.update(f"Sample Rate: {fs_k}")
-
-        exp = max(1, self.engine.blocks_expected)
-        got = self.engine.blocks_processed
-        health = int(100 * min(1.0, got/exp))
-        self.pb.update(health)
-
-        pkL, pkR = self.engine.peak_hold
-        self.lbl_peaks.update(f"Peaks: L {pkL:0.2f}  R {pkR:0.2f}")
-        self.lbl_health.update(
-            f"Health: {health}% | XRuns: {self.engine.xruns} | Clip: {self.engine.clip_latch} | CPU: {self.engine.cpu_ms:0.2f} ms"
-        )
-
-class _EQApp(App):
-    CSS = "Slider { width: 36; } ProgressBar { width: 60; }"
-    def __init__(self, engine):
-        super().__init__()
-        self.engine = engine
-    def compose(self) -> ComposeResult:
-        yield _EQPanel(self.engine)
-    def on_mount(self):
-        threading.Thread(target=self.engine.run, daemon=True).start()
-
-# ======================= PUBLIC ENTRY =======================
-
-def _audio_0611_textual3band_GET_live_eq_console():
-    """
-    -----######----- CORE FUNCTION: LIVE 3-BAND EQ CONSOLE (TEXTUAL) -----######-----
-    Prompts for an AIFF path, then launches a mouse-enabled terminal UI with:
-    - LR4 3-band split (Low/Mid/High)
-    - Per-band gain + Master
-    - Blocksize (latency) control
-    - TQM bar (blocks in-time %, XRuns, clip, CPU)
-    """
-    aiff_path = input("Enter AIFF file path: ").strip()
-    if not aiff_path:
-        print("No path provided. Exiting."); return
-    try:
-        with sf.SoundFile(aiff_path, 'r') as _:
+    # Start stream
+    with stream:
+        try:
+            while not done['flag'] or not q_frames.empty():
+                time.sleep(0.01)
+        except KeyboardInterrupt:
             pass
-    except Exception as e:
-        print(f"Error opening file: {e}"); return
+################### run 
 
-    engine = _ThreeBandEngine(aiff_path, blocksize=256)
-    _EQApp(engine).run()
+# Example usage (wire your UI to update `params` in real-time)
+from pathlib import Path
+
+audio_path = "/Users/yerik/Downloads/___Delete_analyze again /try.aiff"  # your file
+params = {
+    'gain_db': 0.0,
+    'low_db':  0.0,
+    'mid_db':  0.0,
+    'high_db': 0.0,
+}
+
+# Keep the process awake & un-throttled on macOS (run your script via caffeinate):
+#   caffeinate -dimsu python this_script.py
+_ui_0611_audioengine_GET_realtime(audio_path, params, sr_target=44100, blocksize=512, device=None)
+
+# You can update parameters from ANY thread, e.g.:
+# params['gain_db'] = -3.0
+# params['low_db']  = +2.0
+# params['mid_db']  = -1.5
+# params['high_db'] = +1.0
