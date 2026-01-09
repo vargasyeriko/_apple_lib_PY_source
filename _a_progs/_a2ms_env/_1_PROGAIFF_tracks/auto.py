@@ -30,9 +30,9 @@ def _fs_1704_listsubdirs_GET_list_all(root_folder):
 folder_list_23 = _fs_1704_listsubdirs_GET_list_all("/Users/yerik/Music/_1_NEW_SOURCE/_2023_this")
 folder_list_24 = _fs_1704_listsubdirs_GET_list_all("/Users/yerik/Music/_1_NEW_SOURCE/_2024_this")
 folder_list_25 = _fs_1704_listsubdirs_GET_list_all("/Users/yerik/Music/_1_NEW_SOURCE/_2025_this")
+folder_list_26 = _fs_1704_listsubdirs_GET_list_all("/Users/yerik/Music/_1_NEW_SOURCE/_2026_this")
 
-
-folder_list = folder_list_23 + folder_list_24 + folder_list_25
+folder_list = folder_list_23 + folder_list_24 + folder_list_25 + folder_list_26
 #print(folder_list)
 print('\n\n TOTAL FOLDERS IN TRACKS DB ::: ',len(folder_list), '\n')
 ### check folders to se ethe ones that already are done 
