@@ -1,0 +1,12 @@
+Hypothesis (simple)
+User behavior predicts purchase.
+Example:
+More visits + higher income + longer time_on_site
+→ higher probability of purchase
+Target variable:
+purchase
+What we want to test
+H1: visits increase purchase probability
+H2: income increases purchase probability
+H3: device type affects purchase
+H4: region affects purchase

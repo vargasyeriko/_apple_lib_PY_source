@@ -1,0 +1,8 @@
+column,dtype,missing,missing_%,unique
+age,int64,0,0.0,52
+income,float64,0,0.0,49374
+visits,int64,0,0.0,19
+time_on_site,float64,0,0.0,49483
+region,object,0,0.0,4
+device,object,0,0.0,3
+purchase,int64,0,0.0,2
