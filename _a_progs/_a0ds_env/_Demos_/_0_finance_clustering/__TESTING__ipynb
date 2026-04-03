@@ -1,20 +1,6 @@
 {
  "cells": [
   {
-   "cell_type": "code",
-   "execution_count": 12,
-   "id": "1c31f9bd-38d5-4b94-a603-40aea6f80cd6",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# we have 10 vriables (closing_price , volume , open_price , dividends) -> CONTEXT \n",
-    "# dividend .9 on todays date for APPL\n",
-    "\n",
-    "# after PCA -> 3-5 vectors -> explain 90-95% of the 10 variables \n",
-    "# pca_1 = 1.34 ->"
-   ]
-  },
-  {
    "cell_type": "markdown",
    "id": "a5e4a2f0-273c-4a53-ae31-ecfe41b76b53",
    "metadata": {},
