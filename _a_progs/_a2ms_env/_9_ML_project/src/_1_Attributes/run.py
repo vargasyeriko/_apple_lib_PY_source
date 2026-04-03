@@ -640,7 +640,9 @@ df['remix'] = _remixcode_1804_i1_GET_code_remixtype(df['remixer'])
 ######## find bought year 
 
 df = _path_1804_i1_GET_col_bought_year(df)
-#df['bought_year']
+from datetime import datetime
+
+df['bought_year'] = str(datetime.now().year)
 df['bpm_consistency_cat'] = df['bpm_consistency_cat'].astype(str)
 df['ms_LUFS_code'] = df['ms_LUFS_code'].astype(str)
 df['id_cat_lufs'] = df['id_cat_lufs'].astype(str)
