@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_ae9d3f0253c836fe660959d873bff1ad {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.Default.css"/>
+    <script src="https://cdn.jsdelivr.net/gh/python-visualization/folium@main/folium/templates/leaflet_heat.min.js"></script>
+</head>
+<body>
+    
+    
+    <div style="
+        position: fixed;
+        bottom: 40px;
+        left: 40px;
+        z-index: 9999;
+        background: white;
+        border: 1px solid #bbb;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 13px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        line-height: 1.6;
+    ">
+      <div style="font-weight: 700; margin-bottom: 6px;">Legend — Days on Market</div>
+      <div style="margin-bottom: 4px;">
+        <span style="display:inline-block;width:12px;height:12px;background:#e74c3c;border-radius:50%;"></span>
+        New listing
+        &nbsp;→&nbsp;
+        <span style="display:inline-block;width:12px;height:12px;background:#f1c40f;border-radius:50%;"></span>
+        Mid
+        &nbsp;→&nbsp;
+        <span style="display:inline-block;width:12px;height:12px;background:#2ecc71;border-radius:50%;"></span>
+        Sitting / Long time
+      </div>
+      <div><span style="color:black;">●</span> Black: Top 5 most expensive</div>
+      <div><span style="color:purple;">●</span> Purple: Top 5 cheapest</div>
+    </div>
+    
+    
+            <div class="folium-map" id="map_ae9d3f0253c836fe660959d873bff1ad" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_ae9d3f0253c836fe660959d873bff1ad = L.map(
+                "map_ae9d3f0253c836fe660959d873bff1ad",
+                {
+                    center: [42.33, -83.04],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 11,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+            L.control.scale().addTo(map_ae9d3f0253c836fe660959d873bff1ad);
+
+            
+
+        
+    
+            var tile_layer_6b0159c3c03d86074aedd95edf989a10 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_6b0159c3c03d86074aedd95edf989a10.addTo(map_ae9d3f0253c836fe660959d873bff1ad);
+        
+    
+            var feature_group_e2415edf50db0f67a76a5f5d994b9b50 = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var marker_cluster_f5d513226b2081254254c0415d37b8ff = L.markerClusterGroup(
+                {
+  "disableClusteringAtZoom": 15,
+}
+            );
+        
+    
+            var circle_marker_24d691699286e370e4ec955524949d10 = L.circleMarker(
+                [42.3989823, -83.2289534],
+                {"bubblingMouseEvents": true, "color": "#e96432", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e96432", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.265999284948158, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_d2ae4ac35aa0a1fbd0a4cc632950184c = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_9ad079cb8fe0625ed811043971996f30 = $(`<div id="html_9ad079cb8fe0625ed811043971996f30" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 15067 Warwick St, Detroit, MI<br><b>Price:</b> $240,000<br><b>Days on Market:</b> 129<br><b>Index:</b> 0</div>`)[0];
+                popup_d2ae4ac35aa0a1fbd0a4cc632950184c.setContent(html_9ad079cb8fe0625ed811043971996f30);
+            
+        
+
+        circle_marker_24d691699286e370e4ec955524949d10.bindPopup(popup_d2ae4ac35aa0a1fbd0a4cc632950184c)
+        ;
+
+        
+    
+    
+            var circle_marker_b7aa6fbed2cb325e36646809e0739444 = L.circleMarker(
+                [42.3633116, -83.226426],
+                {"bubblingMouseEvents": true, "color": "purple", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "purple", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_1d0a076a492d8f485ada97f100dc6472 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_a0054afe0fe3bef20ebf6ac736f0f160 = $(`<div id="html_a0054afe0fe3bef20ebf6ac736f0f160" style="width: 100.0%; height: 100.0%;"><b>TOP CHEAP</b><br><b>Address:</b> 9317 Artesian St, Detroit, MI<br><b>Price:</b> $15,000<br><b>Days on Market:</b> 44<br><b>Index:</b> 1</div>`)[0];
+                popup_1d0a076a492d8f485ada97f100dc6472.setContent(html_a0054afe0fe3bef20ebf6ac736f0f160);
+            
+        
+
+        circle_marker_b7aa6fbed2cb325e36646809e0739444.bindPopup(popup_1d0a076a492d8f485ada97f100dc6472)
+        ;
+
+        
+    
+    
+            var circle_marker_8c698ec39410217cd1d21b4e0fa53e89 = L.circleMarker(
+                [42.3550607, -82.9922628],
+                {"bubblingMouseEvents": true, "color": "#e75737", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e75737", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.477654629960672, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_af2c25aa5b6a912349855d2361b7d0c6 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_eb3ff5274a8ad5629b924445d03a3d07 = $(`<div id="html_eb3ff5274a8ad5629b924445d03a3d07" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 1023 Iroquois St, Detroit, MI<br><b>Price:</b> $425,000<br><b>Days on Market:</b> 62<br><b>Index:</b> 2</div>`)[0];
+                popup_af2c25aa5b6a912349855d2361b7d0c6.setContent(html_eb3ff5274a8ad5629b924445d03a3d07);
+            
+        
+
+        circle_marker_8c698ec39410217cd1d21b4e0fa53e89.bindPopup(popup_af2c25aa5b6a912349855d2361b7d0c6)
+        ;
+
+        
+    
+    
+            var circle_marker_4262d806ae29ef801b9440c43906457b = L.circleMarker(
+                [42.4405294, -83.1916242],
+                {"bubblingMouseEvents": true, "color": "#e75139", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e75139", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.094386843046121, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_e74a5a3068203e43fc2efefbeb376a8b = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_65170341667838886e004474b9afa5ed = $(`<div id="html_65170341667838886e004474b9afa5ed" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 20140 Marlowe St, Detroit, MI<br><b>Price:</b> $90,000<br><b>Days on Market:</b> 34<br><b>Index:</b> 3</div>`)[0];
+                popup_e74a5a3068203e43fc2efefbeb376a8b.setContent(html_65170341667838886e004474b9afa5ed);
+            
+        
+
+        circle_marker_4262d806ae29ef801b9440c43906457b.bindPopup(popup_e74a5a3068203e43fc2efefbeb376a8b)
+        ;
+
+        
+    
+    
+            var circle_marker_7616b46e5de92418637c74a3b94be272 = L.circleMarker(
+                [42.358978, -83.1567685],
+                {"bubblingMouseEvents": true, "color": "#e7513a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e7513a", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.163026099392206, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_cd89bfe31bae95d3716dd3147a1cdef2 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_2fa159347d23ba3565c9a8dffabbeb51 = $(`<div id="html_2fa159347d23ba3565c9a8dffabbeb51" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 17180 Kentucky St, Detroit, MI<br><b>Price:</b> $149,995<br><b>Days on Market:</b> 30<br><b>Index:</b> 5</div>`)[0];
+                popup_cd89bfe31bae95d3716dd3147a1cdef2.setContent(html_2fa159347d23ba3565c9a8dffabbeb51);
+            
+        
+
+        circle_marker_7616b46e5de92418637c74a3b94be272.bindPopup(popup_cd89bfe31bae95d3716dd3147a1cdef2)
+        ;
+
+        
+    
+    
+            var circle_marker_c43c465081c0f7161c32d115c8d33e78 = L.circleMarker(
+                [42.4364468, -83.127143],
+                {"bubblingMouseEvents": true, "color": "black", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "black", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_5cdb2f5ecd0bafd4f8eae06aff770010 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_a2c08595e204d55f019ad3083f780dbe = $(`<div id="html_a2c08595e204d55f019ad3083f780dbe" style="width: 100.0%; height: 100.0%;"><b>TOP EXPENSIVE</b><br><b>Address:</b> 19511 Lowell Dr, Detroit, MI<br><b>Price:</b> $800,000<br><b>Days on Market:</b> 5<br><b>Index:</b> 7</div>`)[0];
+                popup_5cdb2f5ecd0bafd4f8eae06aff770010.setContent(html_a2c08595e204d55f019ad3083f780dbe);
+            
+        
+
+        circle_marker_c43c465081c0f7161c32d115c8d33e78.bindPopup(popup_5cdb2f5ecd0bafd4f8eae06aff770010)
+        ;
+
+        
+    
+    
+            var circle_marker_cdad671fc3a27b66a15c7ef5a77519e5 = L.circleMarker(
+                [42.3916842, -83.1179382],
+                {"bubblingMouseEvents": true, "color": "#e75638", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e75638", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.506256703611012, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_2650045c9ef16b8ecd36ae7a8227ba6b = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_03b4608c24d174b4564346443aaf9c6c = $(`<div id="html_03b4608c24d174b4564346443aaf9c6c" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 12835 LA Salle Blvd, Detroit, MI<br><b>Price:</b> $450,000<br><b>Days on Market:</b> 55<br><b>Index:</b> 8</div>`)[0];
+                popup_2650045c9ef16b8ecd36ae7a8227ba6b.setContent(html_03b4608c24d174b4564346443aaf9c6c);
+            
+        
+
+        circle_marker_cdad671fc3a27b66a15c7ef5a77519e5.bindPopup(popup_2650045c9ef16b8ecd36ae7a8227ba6b)
+        ;
+
+        
+    
+    
+            var circle_marker_611b6188b523b940c4abcc1a6a8f576d = L.circleMarker(
+                [42.4183325, -82.9300742],
+                {"bubblingMouseEvents": true, "color": "#e74f3a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74f3a", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.071390775831248, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_7a94b7d1c55738b022ae01f0bc259ac8 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_3200954e0d0e226c2efcea2690ff5b10 = $(`<div id="html_3200954e0d0e226c2efcea2690ff5b10" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 6334 Hereford St, Detroit, MI<br><b>Price:</b> $69,900<br><b>Days on Market:</b> 22<br><b>Index:</b> 9</div>`)[0];
+                popup_7a94b7d1c55738b022ae01f0bc259ac8.setContent(html_3200954e0d0e226c2efcea2690ff5b10);
+            
+        
+
+        circle_marker_611b6188b523b940c4abcc1a6a8f576d.bindPopup(popup_7a94b7d1c55738b022ae01f0bc259ac8)
+        ;
+
+        
+    
+    
+            var circle_marker_73068509fdcd4681e38a54395f08de56 = L.circleMarker(
+                [42.4293008, -83.1876794],
+                {"bubblingMouseEvents": true, "color": "#e74d3b", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74d3b", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.040614944583482, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_046ac33628dc612aa858d01d98a60cac = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_6a4dda02e695a945ca1478a66e7c8ccc = $(`<div id="html_6a4dda02e695a945ca1478a66e7c8ccc" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 18923 Mark Twain St, Detroit, MI<br><b>Price:</b> $43,000<br><b>Days on Market:</b> 13<br><b>Index:</b> 10</div>`)[0];
+                popup_046ac33628dc612aa858d01d98a60cac.setContent(html_6a4dda02e695a945ca1478a66e7c8ccc);
+            
+        
+
+        circle_marker_73068509fdcd4681e38a54395f08de56.bindPopup(popup_046ac33628dc612aa858d01d98a60cac)
+        ;
+
+        
+    
+    
+            var circle_marker_199639c8249e7036fbb0cd81b9f4a312 = L.circleMarker(
+                [42.3605097, -82.9959318],
+                {"bubblingMouseEvents": true, "color": "black", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "black", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_fd7d5633aaef5f57ef02b9688d4f8355 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_bac84ac6620612586ffc3d316c1648fd = $(`<div id="html_bac84ac6620612586ffc3d316c1648fd" style="width: 100.0%; height: 100.0%;"><b>TOP EXPENSIVE</b><br><b>Address:</b> 2150 Iroquois St, Detroit, MI<br><b>Price:</b> $1,599,000<br><b>Days on Market:</b> 7<br><b>Index:</b> 11</div>`)[0];
+                popup_fd7d5633aaef5f57ef02b9688d4f8355.setContent(html_bac84ac6620612586ffc3d316c1648fd);
+            
+        
+
+        circle_marker_199639c8249e7036fbb0cd81b9f4a312.bindPopup(popup_fd7d5633aaef5f57ef02b9688d4f8355)
+        ;
+
+        
+    
+    
+            var circle_marker_6dca4813c25be62c7f305bfc9da65e32 = L.circleMarker(
+                [42.3847611, -83.1152068],
+                {"bubblingMouseEvents": true, "color": "#e74f3a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74f3a", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.157311405076868, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_fffa2ff2c5afd8cf91e2b72b2e56a875 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_ed288fcfc6b42c4556fee5d0c236ff6f = $(`<div id="html_ed288fcfc6b42c4556fee5d0c236ff6f" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 2547 Elmhurst St, Detroit, MI<br><b>Price:</b> $145,000<br><b>Days on Market:</b> 23<br><b>Index:</b> 12</div>`)[0];
+                popup_fffa2ff2c5afd8cf91e2b72b2e56a875.setContent(html_ed288fcfc6b42c4556fee5d0c236ff6f);
+            
+        
+
+        circle_marker_6dca4813c25be62c7f305bfc9da65e32.bindPopup(popup_fffa2ff2c5afd8cf91e2b72b2e56a875)
+        ;
+
+        
+    
+    
+            var circle_marker_dae5a6785c4331a261351e9d7f8eb055 = L.circleMarker(
+                [42.3643724, -83.1225571],
+                {"bubblingMouseEvents": true, "color": "purple", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "purple", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_2a820033f4ac9252535e9a98516404bd = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_e95fbf0236ec27b70b6a987008c04b74 = $(`<div id="html_e95fbf0236ec27b70b6a987008c04b74" style="width: 100.0%; height: 100.0%;"><b>TOP CHEAP</b><br><b>Address:</b> 8773 Petoskey Ave, Detroit, MI<br><b>Price:</b> $10,000<br><b>Days on Market:</b> 1214<br><b>Index:</b> 13</div>`)[0];
+                popup_2a820033f4ac9252535e9a98516404bd.setContent(html_e95fbf0236ec27b70b6a987008c04b74);
+            
+        
+
+        circle_marker_dae5a6785c4331a261351e9d7f8eb055.bindPopup(popup_2a820033f4ac9252535e9a98516404bd)
+        ;
+
+        
+    
+    
+            var circle_marker_2a840d63153f3337d355c160bb4c55b7 = L.circleMarker(
+                [42.4152107, -83.1338773],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3c", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.306042188058634, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_17e05ac2b238e2403f2bb0f2b28ce4b8 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_bee6f8a9101a3a65baf98e5ebf15f5d9 = $(`<div id="html_bee6f8a9101a3a65baf98e5ebf15f5d9" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 16834 Muirland St, Detroit, MI<br><b>Price:</b> $275,000<br><b>Days on Market:</b> 4<br><b>Index:</b> 14</div>`)[0];
+                popup_17e05ac2b238e2403f2bb0f2b28ce4b8.setContent(html_bee6f8a9101a3a65baf98e5ebf15f5d9);
+            
+        
+
+        circle_marker_2a840d63153f3337d355c160bb4c55b7.bindPopup(popup_17e05ac2b238e2403f2bb0f2b28ce4b8)
+        ;
+
+        
+    
+    
+            var circle_marker_a4f0427c00e5cd5a130388fe7c54ca0c = L.circleMarker(
+                [42.3663226, -83.0022242],
+                {"bubblingMouseEvents": true, "color": "#e75139", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e75139", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.505112620664998, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_85610b7408701db36dbfa0b960c88dfb = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_67fef6801c72b167da7bfcd1ab5e480f = $(`<div id="html_67fef6801c72b167da7bfcd1ab5e480f" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 3417 Seminole St, Detroit, MI<br><b>Price:</b> $449,000<br><b>Days on Market:</b> 31<br><b>Index:</b> 15</div>`)[0];
+                popup_85610b7408701db36dbfa0b960c88dfb.setContent(html_67fef6801c72b167da7bfcd1ab5e480f);
+            
+        
+
+        circle_marker_a4f0427c00e5cd5a130388fe7c54ca0c.bindPopup(popup_85610b7408701db36dbfa0b960c88dfb)
+        ;
+
+        
+    
+    
+            var circle_marker_67e91cbdbe63bece17e1795441f4a972 = L.circleMarker(
+                [42.4342242, -83.1256531],
+                {"bubblingMouseEvents": true, "color": "black", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "black", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_f10410bd42af23820541d1624a093153 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_839212836ec52bcd3698547b76bacdbf = $(`<div id="html_839212836ec52bcd3698547b76bacdbf" style="width: 100.0%; height: 100.0%;"><b>TOP EXPENSIVE</b><br><b>Address:</b> 1771 Balmoral Dr, Detroit, MI<br><b>Price:</b> $7,000,000<br><b>Days on Market:</b> 392<br><b>Index:</b> 16</div>`)[0];
+                popup_f10410bd42af23820541d1624a093153.setContent(html_839212836ec52bcd3698547b76bacdbf);
+            
+        
+
+        circle_marker_67e91cbdbe63bece17e1795441f4a972.bindPopup(popup_f10410bd42af23820541d1624a093153)
+        ;
+
+        
+    
+    
+            var circle_marker_0b3adb8e5b2684ce85071adc98f2ae95 = L.circleMarker(
+                [42.3828713, -83.1757898],
+                {"bubblingMouseEvents": true, "color": "purple", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "purple", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_d8c4c3302704533e21e8afdbb986d056 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_0d58f017b041ec2619551bb776e24e11 = $(`<div id="html_0d58f017b041ec2619551bb776e24e11" style="width: 100.0%; height: 100.0%;"><b>TOP CHEAP</b><br><b>Address:</b> 12783 Littlefield St, Detroit, MI<br><b>Price:</b> $12,500<br><b>Days on Market:</b> 32<br><b>Index:</b> 18</div>`)[0];
+                popup_d8c4c3302704533e21e8afdbb986d056.setContent(html_0d58f017b041ec2619551bb776e24e11);
+            
+        
+
+        circle_marker_0b3adb8e5b2684ce85071adc98f2ae95.bindPopup(popup_d8c4c3302704533e21e8afdbb986d056)
+        ;
+
+        
+    
+    
+            var circle_marker_1c52680a038ca3bf229f6946b34141fe = L.circleMarker(
+                [42.4176344, -83.1486937],
+                {"bubblingMouseEvents": true, "color": "#e74c3b", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3b", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.345970682874508, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_57b33bc990d000e5b7d5d7a565c0bd83 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_41dec93198317ace97d5351ff70c576a = $(`<div id="html_41dec93198317ace97d5351ff70c576a" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 17150 Santa Barbara Dr, Detroit, MI<br><b>Price:</b> $309,900<br><b>Days on Market:</b> 6<br><b>Index:</b> 19</div>`)[0];
+                popup_57b33bc990d000e5b7d5d7a565c0bd83.setContent(html_41dec93198317ace97d5351ff70c576a);
+            
+        
+
+        circle_marker_1c52680a038ca3bf229f6946b34141fe.bindPopup(popup_57b33bc990d000e5b7d5d7a565c0bd83)
+        ;
+
+        
+    
+    
+            var circle_marker_7a7ee8161ee0cbee27ee2094bb657242 = L.circleMarker(
+                [42.3554359, -83.1528385],
+                {"bubblingMouseEvents": true, "color": "#e86034", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e86034", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.23156238827315, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_570b6224b066d833f1765ecee0500e00 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_5fb7ca5e02a23bf26fc43131ae5b4d04 = $(`<div id="html_5fb7ca5e02a23bf26fc43131ae5b4d04" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 17420 Ohio St, Detroit, MI<br><b>Price:</b> $209,900<br><b>Days on Market:</b> 105<br><b>Index:</b> 21</div>`)[0];
+                popup_570b6224b066d833f1765ecee0500e00.setContent(html_5fb7ca5e02a23bf26fc43131ae5b4d04);
+            
+        
+
+        circle_marker_7a7ee8161ee0cbee27ee2094bb657242.bindPopup(popup_570b6224b066d833f1765ecee0500e00)
+        ;
+
+        
+    
+    
+            var circle_marker_911c6ec1172098f2b51c6ce885c87520 = L.circleMarker(
+                [42.3661893, -83.12004],
+                {"bubblingMouseEvents": true, "color": "#e75438", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e75438", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.105827672506257, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_39d9883242ae7920acbddc589579c90e = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_bfa6e52144107694cf0001bbbc8651ef = $(`<div id="html_bfa6e52144107694cf0001bbbc8651ef" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 8829 Quincy St, Detroit, MI<br><b>Price:</b> $100,000<br><b>Days on Market:</b> 47<br><b>Index:</b> 22</div>`)[0];
+                popup_39d9883242ae7920acbddc589579c90e.setContent(html_bfa6e52144107694cf0001bbbc8651ef);
+            
+        
+
+        circle_marker_911c6ec1172098f2b51c6ce885c87520.bindPopup(popup_39d9883242ae7920acbddc589579c90e)
+        ;
+
+        
+    
+    
+            var circle_marker_5c21af3397866bf617d7d95ccd8356ea = L.circleMarker(
+                [42.4107454, -83.1338991],
+                {"bubblingMouseEvents": true, "color": "#e96b30", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e96b30", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.157311405076868, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_97349705904cd059feec367ca7d4dc61 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_ad3d844c1a7fc977b8a3ee5db0a2fe2b = $(`<div id="html_ad3d844c1a7fc977b8a3ee5db0a2fe2b" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 16211 Muirland St, Detroit, MI<br><b>Price:</b> $145,000<br><b>Days on Market:</b> 163<br><b>Index:</b> 23</div>`)[0];
+                popup_97349705904cd059feec367ca7d4dc61.setContent(html_ad3d844c1a7fc977b8a3ee5db0a2fe2b);
+            
+        
+
+        circle_marker_5c21af3397866bf617d7d95ccd8356ea.bindPopup(popup_97349705904cd059feec367ca7d4dc61)
+        ;
+
+        
+    
+    
+            var circle_marker_c91ccefa7c4bbc4916a88f71dddcddf7 = L.circleMarker(
+                [42.4277169, -82.9865944],
+                {"bubblingMouseEvents": true, "color": "#e75438", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e75438", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.048623525205578, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_1f230e26f665c5efc43322ee3dd580c4 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_99330fba3fb9089c7b9d891eb4a8e01e = $(`<div id="html_99330fba3fb9089c7b9d891eb4a8e01e" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 13449 Greiner St, Detroit, MI<br><b>Price:</b> $50,000<br><b>Days on Market:</b> 46<br><b>Index:</b> 24</div>`)[0];
+                popup_1f230e26f665c5efc43322ee3dd580c4.setContent(html_99330fba3fb9089c7b9d891eb4a8e01e);
+            
+        
+
+        circle_marker_c91ccefa7c4bbc4916a88f71dddcddf7.bindPopup(popup_1f230e26f665c5efc43322ee3dd580c4)
+        ;
+
+        
+    
+    
+            var circle_marker_4dd86d4ed3a73106342decdba61f9a94 = L.circleMarker(
+                [42.3588856, -82.9947631],
+                {"bubblingMouseEvents": true, "color": "#e74e3b", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74e3b", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.489095459420808, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_fd3fea16840a4803985b517e1c936638 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_8cd4356ede63ca6ca79f4279cf68e733 = $(`<div id="html_8cd4356ede63ca6ca79f4279cf68e733" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 1818 Iroquois St, Detroit, MI<br><b>Price:</b> $435,000<br><b>Days on Market:</b> 17<br><b>Index:</b> 25</div>`)[0];
+                popup_fd3fea16840a4803985b517e1c936638.setContent(html_8cd4356ede63ca6ca79f4279cf68e733);
+            
+        
+
+        circle_marker_4dd86d4ed3a73106342decdba61f9a94.bindPopup(popup_fd3fea16840a4803985b517e1c936638)
+        ;
+
+        
+    
+    
+            var circle_marker_bd5e402bbca5e51f06b5cb12243f4eca = L.circleMarker(
+                [42.4065351, -83.2257597],
+                {"bubblingMouseEvents": true, "color": "#e96930", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e96930", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.261422953164105, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_c0e42d4d6f1f74f17fc788161b8dd5fe = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_3cc437dc44241fe82f6481025ec45fbd = $(`<div id="html_3cc437dc44241fe82f6481025ec45fbd" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 18817 Bretton Dr, Detroit, MI<br><b>Price:</b> $236,000<br><b>Days on Market:</b> 154<br><b>Index:</b> 27</div>`)[0];
+                popup_c0e42d4d6f1f74f17fc788161b8dd5fe.setContent(html_3cc437dc44241fe82f6481025ec45fbd);
+            
+        
+
+        circle_marker_bd5e402bbca5e51f06b5cb12243f4eca.bindPopup(popup_c0e42d4d6f1f74f17fc788161b8dd5fe)
+        ;
+
+        
+    
+    
+            var circle_marker_9e0111a6dc7ff8a19e399dcf62ab2b90 = L.circleMarker(
+                [42.4063792, -82.9484199],
+                {"bubblingMouseEvents": true, "color": "#e85d35", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e85d35", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.174472649267072, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_737979e9a46496df8cf8c36b2a82130a = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_e37973704e55d00356c59f6b56959776 = $(`<div id="html_e37973704e55d00356c59f6b56959776" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 5790 Berkshire St, Detroit, MI<br><b>Price:</b> $160,000<br><b>Days on Market:</b> 90<br><b>Index:</b> 28</div>`)[0];
+                popup_737979e9a46496df8cf8c36b2a82130a.setContent(html_e37973704e55d00356c59f6b56959776);
+            
+        
+
+        circle_marker_9e0111a6dc7ff8a19e399dcf62ab2b90.bindPopup(popup_737979e9a46496df8cf8c36b2a82130a)
+        ;
+
+        
+    
+    
+            var circle_marker_e2375eea2f903e9e973413b36b2a630a = L.circleMarker(
+                [42.4354364, -83.1364563],
+                {"bubblingMouseEvents": true, "color": "black", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "black", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_f138b7e6254bd2aec7117c8103d69828 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_a0badf14be453225ae67809936386f74 = $(`<div id="html_a0badf14be453225ae67809936386f74" style="width: 100.0%; height: 100.0%;"><b>TOP EXPENSIVE</b><br><b>Address:</b> 19435 Shrewsbury Rd, Detroit, MI<br><b>Price:</b> $600,000<br><b>Days on Market:</b> 61<br><b>Index:</b> 29</div>`)[0];
+                popup_f138b7e6254bd2aec7117c8103d69828.setContent(html_a0badf14be453225ae67809936386f74);
+            
+        
+
+        circle_marker_e2375eea2f903e9e973413b36b2a630a.bindPopup(popup_f138b7e6254bd2aec7117c8103d69828)
+        ;
+
+        
+    
+    
+            var circle_marker_15f76a8d5700f40c6bb68cc4f800c374 = L.circleMarker(
+                [42.4230232, -83.1716187],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3c", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.082946013585985, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_b79b82cb4213533f53c4997a18af17a7 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_b1e5d4728ebb1fefcdf3a6750d3f8295 = $(`<div id="html_b1e5d4728ebb1fefcdf3a6750d3f8295" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 18095 Appoline St, Detroit, MI<br><b>Price:</b> $80,000<br><b>Days on Market:</b> 4<br><b>Index:</b> 30</div>`)[0];
+                popup_b79b82cb4213533f53c4997a18af17a7.setContent(html_b1e5d4728ebb1fefcdf3a6750d3f8295);
+            
+        
+
+        circle_marker_15f76a8d5700f40c6bb68cc4f800c374.bindPopup(popup_b79b82cb4213533f53c4997a18af17a7)
+        ;
+
+        
+    
+    
+            var circle_marker_2d68f68d92638839d2a18c7271b6524e = L.circleMarker(
+                [42.3320027, -83.0498167],
+                {"bubblingMouseEvents": true, "color": "black", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "black", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_b6031ccd37df42b07ded53607499a29b = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_befd2b14e3ffe24c77b5be326e8d9532 = $(`<div id="html_befd2b14e3ffe24c77b5be326e8d9532" style="width: 100.0%; height: 100.0%;"><b>TOP EXPENSIVE</b><br><b>Address:</b> 1135 Shelby St Apt 2509, Detroit, MI<br><b>Price:</b> $475,000<br><b>Days on Market:</b> 46<br><b>Index:</b> 31</div>`)[0];
+                popup_b6031ccd37df42b07ded53607499a29b.setContent(html_befd2b14e3ffe24c77b5be326e8d9532);
+            
+        
+
+        circle_marker_2d68f68d92638839d2a18c7271b6524e.bindPopup(popup_b6031ccd37df42b07ded53607499a29b)
+        ;
+
+        
+    
+    
+            var circle_marker_92de7234bacc227972730e135eae7845 = L.circleMarker(
+                [42.3651008, -82.9481592],
+                {"bubblingMouseEvents": true, "color": "#e96d2f", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e96d2f", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.128594923131927, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_79f7d351cc455b9b64679ffd31134ca3 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_f0b1ed705ce2ebd293a663d1e706c809 = $(`<div id="html_f0b1ed705ce2ebd293a663d1e706c809" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 1094-1096 Lenox St, Detroit, MI<br><b>Price:</b> $119,900<br><b>Days on Market:</b> 171<br><b>Index:</b> 32</div>`)[0];
+                popup_79f7d351cc455b9b64679ffd31134ca3.setContent(html_f0b1ed705ce2ebd293a663d1e706c809);
+            
+        
+
+        circle_marker_92de7234bacc227972730e135eae7845.bindPopup(popup_79f7d351cc455b9b64679ffd31134ca3)
+        ;
+
+        
+    
+    
+            var circle_marker_ff0e688a56afa49ea637c4e469a927a2 = L.circleMarker(
+                [42.4230583, -83.2629956],
+                {"bubblingMouseEvents": true, "color": "#e75339", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e75339", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.248838040757955, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_6473546bc84fa261a330203b66ec24a9 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_7ef4145b5d2eae68a6aee98a7ba5fc3e = $(`<div id="html_7ef4145b5d2eae68a6aee98a7ba5fc3e" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 18319 McIntyre St, Detroit, MI<br><b>Price:</b> $225,000<br><b>Days on Market:</b> 42<br><b>Index:</b> 34</div>`)[0];
+                popup_6473546bc84fa261a330203b66ec24a9.setContent(html_7ef4145b5d2eae68a6aee98a7ba5fc3e);
+            
+        
+
+        circle_marker_ff0e688a56afa49ea637c4e469a927a2.bindPopup(popup_6473546bc84fa261a330203b66ec24a9)
+        ;
+
+        
+    
+    
+            var circle_marker_81c4025a19cc2178cacb95d83b0a9985 = L.circleMarker(
+                [42.4211947, -83.1319379],
+                {"bubblingMouseEvents": true, "color": "#e75239", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e75239", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.443332141580265, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_5494ab61ab4c7fbb1fae55c48d7ed937 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_e7f53e59bf8a6f6f0d39ece6481429d8 = $(`<div id="html_e7f53e59bf8a6f6f0d39ece6481429d8" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 17515 Parkside St, Detroit, MI<br><b>Price:</b> $395,000<br><b>Days on Market:</b> 37<br><b>Index:</b> 35</div>`)[0];
+                popup_5494ab61ab4c7fbb1fae55c48d7ed937.setContent(html_e7f53e59bf8a6f6f0d39ece6481429d8);
+            
+        
+
+        circle_marker_81c4025a19cc2178cacb95d83b0a9985.bindPopup(popup_5494ab61ab4c7fbb1fae55c48d7ed937)
+        ;
+
+        
+    
+    
+            var circle_marker_b1ac3ee4d7b9b63d7deec29c4e118617 = L.circleMarker(
+                [42.406144, -82.9739599],
+                {"bubblingMouseEvents": true, "color": "purple", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "purple", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_fb85721747436fed283789c00610892c = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_c050a65e33d23b899b61e7910a7f90f3 = $(`<div id="html_c050a65e33d23b899b61e7910a7f90f3" style="width: 100.0%; height: 100.0%;"><b>TOP CHEAP</b><br><b>Address:</b> 13136 Maiden St, Detroit, MI<br><b>Price:</b> $10,000<br><b>Days on Market:</b> 142<br><b>Index:</b> 36</div>`)[0];
+                popup_fb85721747436fed283789c00610892c.setContent(html_c050a65e33d23b899b61e7910a7f90f3);
+            
+        
+
+        circle_marker_b1ac3ee4d7b9b63d7deec29c4e118617.bindPopup(popup_fb85721747436fed283789c00610892c)
+        ;
+
+        
+    
+    
+            var circle_marker_005e10832643982f35c0f3c37b9acead = L.circleMarker(
+                [42.3925659, -83.1842494],
+                {"bubblingMouseEvents": true, "color": "#e85e35", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e85e35", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.010868787987129, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_f28dce6cbe89208162291b1a5975c625 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_70384e0f6bc90c769d19a8b11b8fa2d1 = $(`<div id="html_70384e0f6bc90c769d19a8b11b8fa2d1" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 14321 Ardmore St, Detroit, MI<br><b>Price:</b> $17,000<br><b>Days on Market:</b> 98<br><b>Index:</b> 37</div>`)[0];
+                popup_f28dce6cbe89208162291b1a5975c625.setContent(html_70384e0f6bc90c769d19a8b11b8fa2d1);
+            
+        
+
+        circle_marker_005e10832643982f35c0f3c37b9acead.bindPopup(popup_f28dce6cbe89208162291b1a5975c625)
+        ;
+
+        
+    
+    
+            var circle_marker_a8428f5e76e2d502aa83893bdf02e2e4 = L.circleMarker(
+                [42.4220729, -82.9817636],
+                {"bubblingMouseEvents": true, "color": "#e75239", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e75239", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.032491955666786, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_53a280056ddf57afcdccc29f72ac9614 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_48a6ef3fd0cbd39850d7e10c9b61a730 = $(`<div id="html_48a6ef3fd0cbd39850d7e10c9b61a730" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 13940 Mayfield St, Detroit, MI<br><b>Price:</b> $35,900<br><b>Days on Market:</b> 39<br><b>Index:</b> 39</div>`)[0];
+                popup_53a280056ddf57afcdccc29f72ac9614.setContent(html_48a6ef3fd0cbd39850d7e10c9b61a730);
+            
+        
+
+        circle_marker_a8428f5e76e2d502aa83893bdf02e2e4.bindPopup(popup_53a280056ddf57afcdccc29f72ac9614)
+        ;
+
+        
+    
+    
+            var circle_marker_aed94e4deadd17d7380e3182827e0d97 = L.circleMarker(
+                [42.4463262, -82.9679408],
+                {"bubblingMouseEvents": true, "color": "#e85837", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e85837", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.066814444047194, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_46bd748d126e6dde6b7c0c9585716c9f = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_0432b48327b17905824034b123b6905b = $(`<div id="html_0432b48327b17905824034b123b6905b" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 14973 Bringard Dr, Detroit, MI<br><b>Price:</b> $65,900<br><b>Days on Market:</b> 69<br><b>Index:</b> 40</div>`)[0];
+                popup_46bd748d126e6dde6b7c0c9585716c9f.setContent(html_0432b48327b17905824034b123b6905b);
+            
+        
+
+        circle_marker_aed94e4deadd17d7380e3182827e0d97.bindPopup(popup_46bd748d126e6dde6b7c0c9585716c9f)
+        ;
+
+        
+    
+    
+            var circle_marker_232be9ae486a75f914c668b485a80de2 = L.circleMarker(
+                [42.3947485, -83.2095614],
+                {"bubblingMouseEvents": true, "color": "#eb8626", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#eb8626", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.323203432248838, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_7378014b7bb38e787d49ed62dc7f353d = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_8ca4ff4e0071ee567de341e3053b371f = $(`<div id="html_8ca4ff4e0071ee567de341e3053b371f" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 14554 Woodmont Ave, Detroit, MI<br><b>Price:</b> $290,000<br><b>Days on Market:</b> 298<br><b>Index:</b> 41</div>`)[0];
+                popup_7378014b7bb38e787d49ed62dc7f353d.setContent(html_8ca4ff4e0071ee567de341e3053b371f);
+            
+        
+
+        circle_marker_232be9ae486a75f914c668b485a80de2.bindPopup(popup_7378014b7bb38e787d49ed62dc7f353d)
+        ;
+
+        
+    
+    
+            var circle_marker_1a9a610bb51c12bb0e7a605869a7f572 = L.circleMarker(
+                [42.377042, -83.1681818],
+                {"bubblingMouseEvents": true, "color": "#e74e3b", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74e3b", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.031462281015374, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_86a760fcdb9ab231246578891b3c4256 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_566a23abd7baf93b293e4c5bd8dc8083 = $(`<div id="html_566a23abd7baf93b293e4c5bd8dc8083" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 12096 Meyers Rd, Detroit, MI<br><b>Price:</b> $35,000<br><b>Days on Market:</b> 16<br><b>Index:</b> 42</div>`)[0];
+                popup_86a760fcdb9ab231246578891b3c4256.setContent(html_566a23abd7baf93b293e4c5bd8dc8083);
+            
+        
+
+        circle_marker_1a9a610bb51c12bb0e7a605869a7f572.bindPopup(popup_86a760fcdb9ab231246578891b3c4256)
+        ;
+
+        
+    
+    
+            var circle_marker_5147f49f090382da4d09d23633603889 = L.circleMarker(
+                [42.3977555, -83.231134],
+                {"bubblingMouseEvents": true, "color": "#ec8825", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#ec8825", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.243117626027887, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_9b811f5d9611b3bf3f5ddb50c229030b = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_32924c743e58675d096c931109882f94 = $(`<div id="html_32924c743e58675d096c931109882f94" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 14960 Grandville Ave, Detroit, MI<br><b>Price:</b> $220,000<br><b>Days on Market:</b> 308<br><b>Index:</b> 43</div>`)[0];
+                popup_9b811f5d9611b3bf3f5ddb50c229030b.setContent(html_32924c743e58675d096c931109882f94);
+            
+        
+
+        circle_marker_5147f49f090382da4d09d23633603889.bindPopup(popup_9b811f5d9611b3bf3f5ddb50c229030b)
+        ;
+
+        
+    
+    
+            var circle_marker_24fe5b2d1dff55a89404338568e42d12 = L.circleMarker(
+                [42.424204, -82.939354],
+                {"bubblingMouseEvents": true, "color": "#ea752c", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#ea752c", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.042788702180908, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_556b18e5e948ea3ce84d67de29399668 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_ec4c8c985e53bf301592eb0a0baf3e0c = $(`<div id="html_ec4c8c985e53bf301592eb0a0baf3e0c" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 10901 Worden St, Detroit, MI<br><b>Price:</b> $44,900<br><b>Days on Market:</b> 214<br><b>Index:</b> 44</div>`)[0];
+                popup_556b18e5e948ea3ce84d67de29399668.setContent(html_ec4c8c985e53bf301592eb0a0baf3e0c);
+            
+        
+
+        circle_marker_24fe5b2d1dff55a89404338568e42d12.bindPopup(popup_556b18e5e948ea3ce84d67de29399668)
+        ;
+
+        
+    
+    
+            var circle_marker_558c7c3b10e4354bc4ccc0411c6103af = L.circleMarker(
+                [42.4182177, -83.1390108],
+                {"bubblingMouseEvents": true, "color": "#e74c3b", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3b", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.059949946371112, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_f825c1e18121612dc43a4faa1f6e5eb8 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_0ed28d7a53647821ec7e702d6ce1fef8 = $(`<div id="html_0ed28d7a53647821ec7e702d6ce1fef8" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 17217 Quincy St, Detroit, MI<br><b>Price:</b> $59,900<br><b>Days on Market:</b> 5<br><b>Index:</b> 45</div>`)[0];
+                popup_f825c1e18121612dc43a4faa1f6e5eb8.setContent(html_0ed28d7a53647821ec7e702d6ce1fef8);
+            
+        
+
+        circle_marker_558c7c3b10e4354bc4ccc0411c6103af.bindPopup(popup_f825c1e18121612dc43a4faa1f6e5eb8)
+        ;
+
+        
+    
+    
+            var circle_marker_4c8d5e721abc53e6f2ae821b8d32cae4 = L.circleMarker(
+                [42.3654895, -83.1953606],
+                {"bubblingMouseEvents": true, "color": "#e74d3b", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74d3b", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.333500178762961, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_5db0a6f046881b6b5689b384d9b0aa6b = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_bb0f51e769e6f3a59a56dd52c3c4b8f0 = $(`<div id="html_bb0f51e769e6f3a59a56dd52c3c4b8f0" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 15310 W Chicago St, Detroit, MI<br><b>Price:</b> $299,000<br><b>Days on Market:</b> 10<br><b>Index:</b> 46</div>`)[0];
+                popup_5db0a6f046881b6b5689b384d9b0aa6b.setContent(html_bb0f51e769e6f3a59a56dd52c3c4b8f0);
+            
+        
+
+        circle_marker_4c8d5e721abc53e6f2ae821b8d32cae4.bindPopup(popup_5db0a6f046881b6b5689b384d9b0aa6b)
+        ;
+
+        
+    
+    
+            var circle_marker_3fe802c4979da4b61ee1b8c4d0e7bdda = L.circleMarker(
+                [42.4059438, -83.2350548],
+                {"bubblingMouseEvents": true, "color": "#e75339", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e75339", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.024597783339292, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_61b304ffaa23c969bb4091ef16539a9a = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_f10f915a99a24412dc62211f095f5c67 = $(`<div id="html_f10f915a99a24412dc62211f095f5c67" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 15778 Auburn St, Detroit, MI<br><b>Price:</b> $29,000<br><b>Days on Market:</b> 44<br><b>Index:</b> 47</div>`)[0];
+                popup_61b304ffaa23c969bb4091ef16539a9a.setContent(html_f10f915a99a24412dc62211f095f5c67);
+            
+        
+
+        circle_marker_3fe802c4979da4b61ee1b8c4d0e7bdda.bindPopup(popup_61b304ffaa23c969bb4091ef16539a9a)
+        ;
+
+        
+    
+    
+            var circle_marker_6bbc977ca9dce7439dac5bdc119a3268 = L.circleMarker(
+                [42.4296831, -82.9921169],
+                {"bubblingMouseEvents": true, "color": "purple", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "purple", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_da6ce9310e9d40c2c30d2fb579a0cc6d = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_640d74d5cb3a4b9e01f0f724eaf389d9 = $(`<div id="html_640d74d5cb3a4b9e01f0f724eaf389d9" style="width: 100.0%; height: 100.0%;"><b>TOP CHEAP</b><br><b>Address:</b> 18430 Westphalia St, Detroit, MI<br><b>Price:</b> $7,500<br><b>Days on Market:</b> 311<br><b>Index:</b> 48</div>`)[0];
+                popup_da6ce9310e9d40c2c30d2fb579a0cc6d.setContent(html_640d74d5cb3a4b9e01f0f724eaf389d9);
+            
+        
+
+        circle_marker_6bbc977ca9dce7439dac5bdc119a3268.bindPopup(popup_da6ce9310e9d40c2c30d2fb579a0cc6d)
+        ;
+
+        
+    
+    
+            var circle_marker_e68c8572db4b0d7d8f51ff7eb9218803 = L.circleMarker(
+                [42.4086712, -82.9896465],
+                {"bubblingMouseEvents": true, "color": "#e74e3a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74e3a", "fillOpacity": 0.75, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4.150446907400786, "stroke": true, "weight": 1}
+            ).addTo(marker_cluster_f5d513226b2081254254c0415d37b8ff);
+        
+    
+        var popup_026e46ea7dd352067ddd16777c788c9f = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_ac6ef98fc9935dfec4239a0e1abd6f27 = $(`<div id="html_ac6ef98fc9935dfec4239a0e1abd6f27" style="width: 100.0%; height: 100.0%;"><b>Address:</b> 8391 E Outer Dr, Detroit, MI<br><b>Price:</b> $139,000<br><b>Days on Market:</b> 18<br><b>Index:</b> 49</div>`)[0];
+                popup_026e46ea7dd352067ddd16777c788c9f.setContent(html_ac6ef98fc9935dfec4239a0e1abd6f27);
+            
+        
+
+        circle_marker_e68c8572db4b0d7d8f51ff7eb9218803.bindPopup(popup_026e46ea7dd352067ddd16777c788c9f)
+        ;
+
+        
+    
+    
+            marker_cluster_f5d513226b2081254254c0415d37b8ff.addTo(feature_group_e2415edf50db0f67a76a5f5d994b9b50);
+        
+    
+            feature_group_e2415edf50db0f67a76a5f5d994b9b50.addTo(map_ae9d3f0253c836fe660959d873bff1ad);
+        
+    
+            var feature_group_e7026af1e7b5f70d2e0f18a63c48ae9a = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var heat_map_8d3dc403db6cc9888a04db79d5ae0b43 = L.heatLayer(
+                [[42.3989823, -83.2289534, 0.03428571428571429], [42.3633116, -83.226426, 0.002142857142857143], [42.3550607, -82.9922628, 0.060714285714285714], [42.4405294, -83.1916242, 0.012857142857142857], [42.358978, -83.1567685, 0.021427857142857144], [42.4364468, -83.127143, 0.11428571428571428], [42.3916842, -83.1179382, 0.06428571428571428], [42.4183325, -82.9300742, 0.009985714285714285], [42.4293008, -83.1876794, 0.006142857142857143], [42.3605097, -82.9959318, 0.22842857142857143], [42.3847611, -83.1152068, 0.020714285714285713], [42.3643724, -83.1225571, 0.0014285714285714286], [42.4152107, -83.1338773, 0.039285714285714285], [42.3663226, -83.0022242, 0.06414285714285714], [42.4342242, -83.1256531, 1.0], [42.3828713, -83.1757898, 0.0017857142857142857], [42.4176344, -83.1486937, 0.04427142857142857], [42.3554359, -83.1528385, 0.029985714285714286], [42.3661893, -83.12004, 0.014285714285714285], [42.4107454, -83.1338991, 0.020714285714285713], [42.4277169, -82.9865944, 0.007142857142857143], [42.3588856, -82.9947631, 0.062142857142857146], [42.4065351, -83.2257597, 0.03371428571428572], [42.4063792, -82.9484199, 0.022857142857142857], [42.4354364, -83.1364563, 0.08571428571428572], [42.4230232, -83.1716187, 0.011428571428571429], [42.3320027, -83.0498167, 0.06785714285714285], [42.3651008, -82.9481592, 0.017128571428571427], [42.4230583, -83.2629956, 0.03214285714285714], [42.4211947, -83.1319379, 0.056428571428571425], [42.406144, -82.9739599, 0.0014285714285714286], [42.3925659, -83.1842494, 0.0024285714285714284], [42.4220729, -82.9817636, 0.0051285714285714285], [42.4463262, -82.9679408, 0.009414285714285714], [42.3947485, -83.2095614, 0.041428571428571426], [42.377042, -83.1681818, 0.005], [42.3977555, -83.231134, 0.03142857142857143], [42.424204, -82.939354, 0.006414285714285714], [42.4182177, -83.1390108, 0.008557142857142857], [42.3654895, -83.1953606, 0.04271428571428571], [42.4059438, -83.2350548, 0.004142857142857143], [42.4296831, -82.9921169, 0.0010714285714285715], [42.4086712, -82.9896465, 0.019857142857142858]],
+                {
+  "minOpacity": 0.2,
+  "maxZoom": 15,
+  "radius": 15,
+  "blur": 20,
+}
+            );
+        
+    
+            heat_map_8d3dc403db6cc9888a04db79d5ae0b43.addTo(feature_group_e7026af1e7b5f70d2e0f18a63c48ae9a);
+        
+    
+            feature_group_e7026af1e7b5f70d2e0f18a63c48ae9a.addTo(map_ae9d3f0253c836fe660959d873bff1ad);
+        
+    
+            var layer_control_51e5de6d90988a8565569721b3167dcd_layers = {
+                base_layers : {
+                    "openstreetmap" : tile_layer_6b0159c3c03d86074aedd95edf989a10,
+                },
+                overlays :  {
+                    "Markers" : feature_group_e2415edf50db0f67a76a5f5d994b9b50,
+                    "HeatMap" : feature_group_e7026af1e7b5f70d2e0f18a63c48ae9a,
+                },
+            };
+            let layer_control_51e5de6d90988a8565569721b3167dcd = L.control.layers(
+                layer_control_51e5de6d90988a8565569721b3167dcd_layers.base_layers,
+                layer_control_51e5de6d90988a8565569721b3167dcd_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": false,
+  "autoZIndex": true,
+}
+            ).addTo(map_ae9d3f0253c836fe660959d873bff1ad);
+
+        
+</script>
+</html>
