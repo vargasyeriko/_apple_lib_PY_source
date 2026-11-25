@@ -1,0 +1,205 @@
+date,year,action,ticker,quantity,unit_price,amount,note
+2022-04-05,2022,buy,DOGE,155.08,0.161234,-25.01,
+2022-04-05,2022,bonus,Robinhood,,,5.5,bonus stock
+2022-04-05,2022,buy,Twitter,3.0,50.0,-150.0,
+2022-04-11,2022,deposit,Spend,,,200.0,
+2022-04-19,2022,buy,Netflix,2.142813,245.0,-524.99,
+2022-04-21,2022,buy,Alibaba,2.224694,89.9,-200.0,
+2022-04-21,2022,buy,NVIDIA,1.378993,217.55,-300.0,
+2022-04-26,2022,deposit,Spend,,,1000.0,
+2022-04-26,2022,deposit,Spend,,,500.0,
+2022-05-01,2022,buy,Netflix,2.608105,191.71,-500.0,
+2022-05-04,2022,buy,INVITAE,155.340552,5.15,-800.0,
+2022-05-04,2022,buy,LendingTree,2.558257,78.18,-200.0,
+2022-05-04,2022,deposit,Spend,,,1000.0,
+2022-05-05,2022,buy,2U,19.960174,10.02,-200.0,
+2022-05-05,2022,buy,Ford,6.761325,14.79,-100.0,
+2022-05-05,2022,buy,Netflix,2.491156,200.71,-500.0,
+2022-05-05,2022,deposit,Spend,,,800.0,
+2022-05-13,2022,deposit,Spend,,,500.0,
+2022-05-16,2022,buy,Apple,3.445187,145.13,-500.0,
+2022-05-18,2022,buy,Apple,1.404613,142.39,-200.0,
+2022-05-18,2022,buy,Ford,23.284439,12.88,-300.0,
+2022-05-19,2022,deposit,Spend,,,500.0,
+2022-05-26,2022,deposit,Spend,,,500.0,
+2022-06-07,2022,buy,Alibaba,1.151819,108.52,-125.0,
+2022-06-07,2022,buy,Apple,1.685203,148.35,-250.0,
+2022-06-09,2022,buy,TC Energy,2.148618,58.18,-125.0,
+2022-06-10,2022,buy,2U,145.646976,8.24,-1200.0,
+2022-06-10,2022,buy,DOGE,130.12,0.076855,-10.01,
+2022-06-10,2022,buy,Netflix,0.544918,183.51,-100.0,
+2022-06-10,2022,deposit,Spend,,,500.0,
+2022-06-10,2022,deposit,Spend,,,1000.0,
+2022-06-11,2022,buy,NVIDIA,1.18925,159.76,-189.99,
+2022-06-14,2022,sell,2U,132.485581,7.52,996.23,
+2022-06-14,2022,sell,Alibaba,1.35056,101.94,137.68,
+2022-06-14,2022,sell,Apple,2.61396,133.0,347.66,
+2022-06-14,2022,sell,Ford,18.02742,11.98,215.97,
+2022-06-14,2022,sell,INVITAE,124.272,2.23,277.11,
+2022-06-14,2022,sell,LendingTree,1.53,54.99,84.14,
+2022-06-14,2022,sell,NVIDIA,2.054594,157.33,323.25,
+2022-06-14,2022,sell,Netflix,4.672151,169.79,793.26,
+2022-06-14,2022,sell,TC Energy,0.85944,55.02,47.29,
+2022-06-14,2022,sell,Twitter,1.8,38.0,68.4,
+2022-07-01,2022,dividend,NVIDIA,,,0.06,cash
+2022-07-29,2022,dividend,TC Energy,,,0.76,cash
+2022-08-11,2022,dividend,Apple,,,0.9,cash
+2022-09-01,2022,dividend,Ford,,,1.8,cash
+2022-09-01,2022,withdrawal,Spend,,,-200.0,
+2022-09-12,2022,withdrawal,Spend,,,-200.0,
+2022-09-29,2022,dividend,NVIDIA,,,0.02,cash
+2022-10-31,2022,dividend,TC Energy,,,0.72,cash
+2022-11-10,2022,dividend,Apple,,,0.9,cash
+2022-12-01,2022,dividend,Ford,,,1.8,cash
+2022-12-22,2022,dividend,NVIDIA,,,0.02,cash
+2023-01-31,2023,dividend,TC Energy,,,0.74,cash
+2023-02-16,2023,dividend,Apple,,,0.9,cash
+2023-03-01,2023,dividend,Ford,,,7.81,cash
+2023-03-01,2023,dividend,Ford,,,1.8,cash
+2023-03-29,2023,dividend,NVIDIA,,,0.02,cash
+2023-04-28,2023,dividend,TC Energy,,,0.75,cash
+2023-05-09,2023,fee,Alibaba,,,-0.04,BABA ADR
+2023-05-18,2023,dividend,Apple,,,0.94,cash
+2023-06-01,2023,dividend,Ford,,,1.8,cash
+2023-06-30,2023,dividend,NVIDIA,,,0.02,cash
+2023-07-31,2023,dividend,TC Energy,,,0.77,cash
+2023-08-17,2023,dividend,Apple,,,0.94,cash
+2023-09-01,2023,dividend,Ford,,,1.8,cash
+2023-09-28,2023,dividend,NVIDIA,,,0.02,cash
+2023-10-31,2023,dividend,TC Energy,,,0.73,cash
+2023-11-16,2023,dividend,Apple,,,0.94,cash
+2023-11-28,2023,withdrawal,Spend,,,-1000.0,
+2023-12-01,2023,dividend,Ford,,,1.8,cash
+2023-12-28,2023,dividend,NVIDIA,,,0.02,cash
+2024-01-18,2024,dividend,Alibaba,,,1.99,cash
+2024-01-19,2024,withdrawal,Spend,,,-800.0,
+2024-01-31,2024,dividend,TC Energy,,,0.76,cash
+2024-02-15,2024,dividend,Apple,,,0.94,cash
+2024-02-20,2024,withdrawal,Spend,,,-888.0,
+2024-03-01,2024,dividend,Ford,,,1.8,cash
+2024-03-01,2024,dividend,Ford,,,2.16,cash
+2024-03-27,2024,dividend,NVIDIA,,,0.02,cash
+2024-04-30,2024,buy,TC Energy,0.02124,35.78,-0.76,
+2024-04-30,2024,dividend,TC Energy,,,0.76,reinvested
+2024-05-10,2024,fee,Alibaba,,,-0.04,BABA ADR
+2024-05-16,2024,buy,Apple,0.005151,190.22,-0.98,
+2024-05-16,2024,dividend,Apple,,,0.98,reinvested
+2024-06-03,2024,buy,Ford,0.148514,12.12,-1.8,
+2024-06-03,2024,dividend,Ford,,,1.8,reinvested
+2024-06-10,2024,split,NVIDIA,,,0.0,10:1 forward
+2024-06-14,2024,split,2U,,,0.0,1:30 reverse
+2024-06-28,2024,buy,NVIDIA,0.00041,121.76,-0.05,
+2024-06-28,2024,dividend,NVIDIA,,,0.05,reinvested
+2024-07-12,2024,buy,Alibaba,0.025385,78.39,-1.99,
+2024-07-12,2024,dividend,Alibaba,,,1.99,reinvested
+2024-07-12,2024,buy,Alibaba,0.017094,78.39,-1.34,
+2024-07-12,2024,dividend,Alibaba,,,1.34,reinvested
+2024-07-31,2024,buy,TC Energy,0.017978,42.83,-0.77,
+2024-07-31,2024,dividend,TC Energy,,,0.77,reinvested
+2024-08-15,2024,buy,Apple,0.004365,224.47,-0.98,
+2024-08-15,2024,dividend,Apple,,,0.98,reinvested
+2024-09-03,2024,buy,Ford,0.165013,11.09,-1.83,
+2024-09-03,2024,dividend,Ford,,,1.83,reinvested
+2024-10-03,2024,buy,NVIDIA,0.000407,122.85,-0.05,
+2024-10-03,2024,dividend,NVIDIA,,,0.05,reinvested
+2024-10-31,2024,buy,TC Energy,0.016404,46.94,-0.77,
+2024-10-31,2024,dividend,TC Energy,,,0.77,reinvested
+2024-11-14,2024,buy,Apple,0.004362,224.62,-0.98,
+2024-11-14,2024,dividend,Apple,,,0.98,reinvested
+2024-12-02,2024,buy,Ford,0.169757,10.9,-1.85,
+2024-12-02,2024,dividend,Ford,,,1.85,reinvested
+2024-12-27,2024,buy,NVIDIA,0.000364,137.03,-0.05,
+2024-12-27,2024,dividend,NVIDIA,,,0.05,reinvested
+2025-01-31,2025,buy,South Bow,0.004645,23.68,-0.11,
+2025-01-31,2025,dividend,South Bow,,,0.11,reinvested
+2025-01-31,2025,buy,TC Energy,0.014396,45.15,-0.65,
+2025-01-31,2025,dividend,TC Energy,,,0.65,reinvested
+2025-02-13,2025,buy,Apple,0.004015,244.06,-0.98,
+2025-02-13,2025,dividend,Apple,,,0.98,reinvested
+2025-03-03,2025,buy,Ford,0.204574,9.19,-1.88,
+2025-03-03,2025,dividend,Ford,,,1.88,reinvested
+2025-03-03,2025,buy,Ford,0.204458,9.2,-1.88,
+2025-03-03,2025,dividend,Ford,,,1.88,reinvested
+2025-04-02,2025,buy,NVIDIA,0.000482,103.59,-0.05,
+2025-04-02,2025,dividend,NVIDIA,,,0.05,reinvested
+2025-04-15,2025,buy,South Bow,0.004863,24.67,-0.12,
+2025-04-15,2025,dividend,South Bow,,,0.12,reinvested
+2025-05-01,2025,buy,TC Energy,0.014109,50.32,-0.71,
+2025-05-01,2025,dividend,TC Energy,,,0.71,reinvested
+2025-05-15,2025,buy,Apple,0.004848,210.38,-1.02,
+2025-05-15,2025,dividend,Apple,,,1.02,reinvested
+2025-05-23,2025,fee,Alibaba,,,-0.04,BABA ADR
+2025-06-02,2025,buy,Ford,0.192281,10.09,-1.94,
+2025-06-02,2025,dividend,Ford,,,1.94,reinvested
+2025-07-03,2025,buy,NVIDIA,0.000315,158.51,-0.05,
+2025-07-03,2025,dividend,NVIDIA,,,0.05,reinvested
+2025-07-10,2025,buy,Alibaba,0.019985,106.58,-2.13,
+2025-07-10,2025,dividend,Alibaba,,,2.13,reinvested
+2025-07-10,2025,buy,Alibaba,0.018472,106.65,-1.97,
+2025-07-10,2025,dividend,Alibaba,,,1.97,reinvested
+2025-07-15,2025,buy,South Bow,0.004506,26.63,-0.12,
+2025-07-15,2025,dividend,South Bow,,,0.12,reinvested
+2025-07-31,2025,buy,TC Energy,0.01476,48.1,-0.71,
+2025-07-31,2025,dividend,TC Energy,,,0.71,reinvested
+2025-08-14,2025,buy,Apple,0.004431,232.45,-1.03,
+2025-08-14,2025,dividend,Apple,,,1.03,reinvested
+2025-09-02,2025,buy,Ford,0.169105,11.65,-1.97,
+2025-09-02,2025,dividend,Ford,,,1.97,reinvested
+2025-10-02,2025,buy,NVIDIA,0.000265,188.48,-0.05,
+2025-10-02,2025,dividend,NVIDIA,,,0.05,reinvested
+2025-10-15,2025,buy,South Bow,0.004468,26.86,-0.12,
+2025-10-15,2025,dividend,South Bow,,,0.12,reinvested
+2025-10-31,2025,buy,TC Energy,0.014157,50.15,-0.71,
+2025-10-31,2025,dividend,TC Energy,,,0.71,reinvested
+2025-11-13,2025,buy,Apple,0.003779,272.49,-1.03,
+2025-11-13,2025,dividend,Apple,,,1.03,reinvested
+2025-11-17,2025,split,Netflix,,,0.0,10:1 forward
+2025-12-01,2025,buy,Ford,0.152841,13.02,-1.99,
+2025-12-01,2025,dividend,Ford,,,1.99,reinvested
+2025-12-26,2025,buy,NVIDIA,0.000267,186.63,-0.05,
+2025-12-26,2025,dividend,NVIDIA,,,0.05,reinvested
+2026-01-15,2026,buy,South Bow,0.004507,26.62,-0.12,
+2026-01-15,2026,dividend,South Bow,,,0.12,reinvested
+2026-01-30,2026,buy,TC Energy,0.012869,58.28,-0.75,
+2026-01-30,2026,dividend,TC Energy,,,0.75,reinvested
+2026-02-12,2026,buy,Apple,0.003965,259.75,-1.03,
+2026-02-12,2026,dividend,Apple,,,1.03,reinvested
+2026-03-02,2026,buy,Ford,0.154976,12.97,-2.01,
+2026-03-02,2026,dividend,Ford,,,2.01,reinvested
+2026-03-23,2026,withdrawal,Spartan Saver,,,-100.0,
+2026-03-23,2026,withdrawal,TOTAL CHECKING,,,-204.36,
+2026-03-24,2026,sell,Alibaba,2.106889,124.93,263.21,
+2026-03-24,2026,sell,Apple,2.0,254.47,508.94,
+2026-03-24,2026,sell,Ford,11.81,11.8,139.36,
+2026-03-24,2026,sell,Netflix,3.0,92.77,278.31,
+2026-03-24,2026,sell,TC Energy,1.415091,64.76,91.64,
+2026-04-01,2026,buy,NVIDIA,0.000286,174.35,-0.05,
+2026-04-01,2026,dividend,NVIDIA,,,0.05,reinvested
+2026-04-01,2026,withdrawal,Spartan Saver,,,-1100.0,
+2026-04-15,2026,buy,South Bow,0.003685,32.56,-0.12,
+2026-04-15,2026,dividend,South Bow,,,0.12,reinvested
+2026-04-16,2026,buy,AMD,0.46,273.69,-125.9,
+2026-04-16,2026,buy,ASML,0.039,1417.28,-55.27,
+2026-04-16,2026,buy,Broadcom,0.056,397.16,-22.24,
+2026-04-16,2026,sell,Ford,1.769863,12.48,22.08,
+2026-05-05,2026,buy,ASML,6.5e-05,1515.48,-0.1,
+2026-05-05,2026,dividend,ASML,,,0.1,reinvested
+2026-05-13,2026,buy,Apple,0.001777,298.12,-0.53,
+2026-05-13,2026,dividend,Apple,,,0.53,reinvested
+2026-05-29,2026,sell,Netflix,20.0,86.18,1723.46,
+2026-06-01,2026,withdrawal,TOTAL CHECKING,,,-1723.59,
+2026-06-05,2026,sell,Netflix,6.14841,82.38,506.51,
+2026-06-08,2026,buy,NVIDIA,0.006099,209.84,-1.28,
+2026-06-08,2026,dividend,NVIDIA,,,1.28,reinvested
+2026-06-12,2026,withdrawal,TOTAL CHECKING,,,-500.0,
+2026-06-24,2026,buy,Broadcom,0.000106,376.54,-0.04,
+2026-06-24,2026,dividend,Broadcom,,,0.04,reinvested
+2026-07-08,2026,sell,AMD,0.3,507.13,152.14,
+2026-07-08,2026,sell,ASML,0.039065,1734.94,67.78,
+2026-07-08,2026,sell,Apple,1.5,312.0,468.0,
+2026-07-08,2026,sell,Broadcom,0.056106,368.92,20.7,
+2026-07-08,2026,sell,DOGE,285.2,0.071329,20.34,
+2026-07-08,2026,sell,LendingTree,1.028257,44.9,46.17,
+2026-07-08,2026,sell,NVIDIA,4.6,194.34,893.94,
+2026-07-08,2026,sell,Netflix,2.0,76.38,152.76,
+2026-07-08,2026,sell,South Bow,0.292353,36.22,10.59,
